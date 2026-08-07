@@ -322,7 +322,6 @@
 													<RowDefinition Height="30"/>
 													<RowDefinition Height="30"/>
 													<RowDefinition Height="30"/>
-													<RowDefinition Height="30"/>
 												</Grid.RowDefinitions>
 												<TextBlock Grid.Column="0" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Title:"/>
 												<TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditTitleText, UpdateSourceTrigger=PropertyChanged}"/>

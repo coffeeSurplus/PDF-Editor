@@ -226,9 +226,11 @@
 		<Setter Property="Width" Value="1"/>
 	</Style>
 	<Style TargetType="ScrollViewer">
+		<Setter Property="Focusable" Value="False"/>
 		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
 	</Style>
 	<Style TargetType="ScrollViewer" x:Key="PDFScrollViewer">
+		<Setter Property="Focusable" Value="False"/>
 		<Setter Property="CanContentScroll" Value="True"/>
 		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
 	</Style>
