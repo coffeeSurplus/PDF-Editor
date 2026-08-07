@@ -1,0 +1,128 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Style TargetType="TextBlock" x:Key="DefaultTextBlock">
+		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Body}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="EditButtonTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="EditButtonLabelTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="EditButtonTitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Heading}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="EditPropertiesTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="MainWindowTitleBarTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="NavigationTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="NavigationTitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Heading}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PageButtonTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Heading}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PageButtonSubtitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Dark}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="0,2.5,0,0"/>
+		<Setter Property="TextWrapping" Value="Wrap"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PopupTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PopupHeadingTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Heading}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PopupSubtitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="PopupTitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Title}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="SearchBoxPlaceholderTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Dark}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="IsHitTestVisible" Value="False"/>
+		<Setter Property="Margin" Value="2,0,0,0"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="SidepanelTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="SidepanelFileTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="SidepanelTitleTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Title}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=White}"/>
+	</Style>
+	<Style TargetType="TextBlock" x:Key="ToolbarTextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+		<Setter Property="Margin" Value="2.5,0,2.5,0"/>
+	</Style>
+	<Style TargetType="TextBox" x:Key="DefaultTextBox">
+		<Setter Property="AcceptsReturn" Value="False"/>
+		<Setter Property="AcceptsTab" Value="False"/>
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="CaretBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Body}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="TextBox" x:Key="EditTextBox" BasedOn="{StaticResource ResourceKey=DefaultTextBox}">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=LightGrey}"/>
+		<Setter Property="Margin" Value="5,2.5,5,2.5"/>
+		<Setter Property="Width" Value="100"/>
+	</Style>
+	<Style TargetType="TextBox" x:Key="EditPropertiesTextBox" BasedOn="{StaticResource ResourceKey=DefaultTextBox}">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=LightGrey}"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="5,2.5,5,2.5"/>
+		<Setter Property="Width" Value="300"/>
+	</Style>
+	<Style TargetType="TextBox" x:Key="SearchBoxTextBox" BasedOn="{StaticResource ResourceKey=DefaultTextBox}">
+		<Setter Property="Padding" Value="30,0,30,0"/>
+	</Style>
+	<Style TargetType="TextBox" x:Key="ToolbarTextBox" BasedOn="{StaticResource ResourceKey=DefaultTextBox}">
+		<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		<Setter Property="Margin" Value="2.5,5,2.5,5"/>
+		<Setter Property="Width" Value="40"/>
+	</Style>
+</ResourceDictionary>

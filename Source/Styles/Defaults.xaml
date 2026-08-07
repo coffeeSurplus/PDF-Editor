@@ -1,0 +1,19 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:sys="clr-namespace:System;assembly=mscorlib">
+	<Color x:Key="PrimaryColor">#800E13</Color>
+	<Color x:Key="TransparentColor">#00000000</Color>
+	<FontFamily x:Key="DefaultFont">Roboto</FontFamily>
+	<SolidColorBrush x:Key="Black" Color="#000000"/>
+	<SolidColorBrush x:Key="Dark" Color="#4F4F4F"/>
+	<SolidColorBrush x:Key="DarkGrey" Color="#9F9F9F"/>
+	<SolidColorBrush x:Key="Light" Color="#F7F7F7"/>
+	<SolidColorBrush x:Key="LightGrey" Color="#DFDFDF"/>
+	<SolidColorBrush x:Key="Primary" Color="#800E13"/>
+	<SolidColorBrush x:Key="Secondary" Color="#640D14"/>
+	<SolidColorBrush x:Key="Transparent" Color="#00000000"/>
+	<SolidColorBrush x:Key="White" Color="#FFFFFF"/>
+	<sys:Double x:Key="Body">12</sys:Double>
+	<sys:Double x:Key="Heading">14</sys:Double>
+	<sys:Double x:Key="Title">18</sys:Double>
+</ResourceDictionary>

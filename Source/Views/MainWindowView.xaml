@@ -1,0 +1,752 @@
+﻿<Window x:Class="PDF_Editor.Source.Views.MainWindowView"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:icon="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+		xmlns:viewModel="clr-namespace:PDF_Editor.Source.ViewModels"
+		xmlns:control="clr-namespace:PDF_Editor.Source.Controls"
+		Style="{StaticResource ResourceKey=MainWindow}" WindowState="{Binding Path=MainWindowState}">
+	<Window.DataContext>
+		<viewModel:MainWindowViewModel/>
+	</Window.DataContext>
+	<Window.Title>
+		<MultiBinding Converter="{StaticResource ResourceKey=MainWindowTitle}">
+			<Binding Path="PageCurrentPage"/>
+			<Binding Path="HomeCurrentPage"/>
+			<Binding Path="PageCurrentPDF"/>
+			<Binding Path="PageCurrentDocumentsPath"/>
+			<Binding Path="PageCurrentDesktopPath"/>
+			<Binding Path="PageCurrentDownloadsPath"/>
+		</MultiBinding>
+	</Window.Title>
+	<Grid>
+		<Border Padding="{Binding Path=MainWindowState, Converter={StaticResource ResourceKey=MainWindowBorderPadding}}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="1*"/>
+				</Grid.ColumnDefinitions>
+				<Border Grid.Column="0" Style="{StaticResource ResourceKey=SidepanelBorder}" Width="{Binding Path=SidepanelCollapsed, Converter={StaticResource ResourceKey=SidepanelWidth}}">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="75"/>
+							<RowDefinition Height="7.5"/>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="7.5"/>
+							<RowDefinition Height="1*"/>
+							<RowDefinition Height="7.5"/>
+							<RowDefinition Height="40"/>
+						</Grid.RowDefinitions>
+						<TextBlock Grid.Row="0" Style="{StaticResource ResourceKey=SidepanelTitleTextBlock}" Visibility="{Binding Path=SidepanelCollapsed, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}" Text="PDF Editor"/>
+						<StackPanel Grid.Row="0" Style="{StaticResource ResourceKey=SidePanelTitleStackPanel}" Visibility="{Binding Path=SidepanelCollapsed, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+							<TextBlock Style="{StaticResource ResourceKey=SidepanelTitleTextBlock}" Text="PDF"/>
+							<TextBlock Style="{StaticResource ResourceKey=SidepanelTitleTextBlock}" Text="Editor"/>
+						</StackPanel>
+						<Rectangle Grid.Row="1" Style="{StaticResource ResourceKey=SidepanelRectangle}"/>
+						<Border Grid.Row="2" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=1}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Home">
+								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Home"/>
+							</ToggleButton>
+						</Border>
+						<Border Grid.Row="3" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=2}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Documents">
+								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="FileAlt"/>
+							</ToggleButton>
+						</Border>
+						<Border Grid.Row="4" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=3}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Desktop">
+								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Desktop"/>
+							</ToggleButton>
+						</Border>
+						<Border Grid.Row="5" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=4}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Downloads">
+								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Download"/>
+							</ToggleButton>
+						</Border>
+						<Border Grid.Row="6" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+							<Button Style="{StaticResource ResourceKey=SidepanelButton}" Command="{Binding Path=SidepanelBrowseCommandAsync}" ContentStringFormat="Browse">
+								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="FolderOpen"/>
+							</Button>
+						</Border>
+						<Rectangle Grid.Row="7" Style="{StaticResource ResourceKey=SidepanelRectangle}"/>
+						<ScrollViewer Grid.Row="8" Style="{StaticResource ResourceKey=SidepanelScrollViewer}">
+							<ItemsControl ItemsSource="{Binding Path=SidepanelFileList}" ItemTemplate="{StaticResource ResourceKey=SidepanelDataTemplate}"/>
+						</ScrollViewer>
+						<Rectangle Grid.Row="9" Style="{StaticResource ResourceKey=SidepanelRectangle}"/>
+						<Border Grid.Row="10" Style="{StaticResource ResourceKey=SidepanelCollapseButtonBorder}">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelCollapseButton}" IsChecked="{Binding Path=SidepanelCollapsed}"/>
+						</Border>
+					</Grid>
+				</Border>
+				<Grid Grid.Column="1">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="30"/>
+						<RowDefinition Height="1*"/>
+					</Grid.RowDefinitions>
+					<Grid Grid.Row="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="Auto"/>
+							<ColumnDefinition Width="1*"/>
+							<ColumnDefinition Width="50"/>
+							<ColumnDefinition Width="50"/>
+							<ColumnDefinition Width="50"/>
+						</Grid.ColumnDefinitions>
+						<Border Grid.Column="0" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1.2.3.4}">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowHomeCommand}" ToolTip="Home">
+								<Label Style="{StaticResource ResourceKey=HomeIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+							</Button>
+						</Border>
+						<Border Grid.Column="1" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4}">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowPageBackCommand}" ToolTip="Back">
+								<Label Style="{StaticResource ResourceKey=UpIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+							</Button>
+						</Border>
+						<Border Grid.Column="2" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4}">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowRefreshCommandAsync}" ToolTip="Refresh">
+								<Label Style="{StaticResource ResourceKey=RotateRightIcon}"/>
+							</Button>
+						</Border>
+						<TextBlock Grid.Column="3" Style="{StaticResource ResourceKey=MainWindowTitleBarTextBlock}">
+							<TextBlock.Text>
+								<MultiBinding Converter="{StaticResource ResourceKey=MainWindowTitleBar}">
+									<Binding Path="PageCurrentPage"/>
+									<Binding Path="HomeCurrentPage"/>
+									<Binding Path="PageCurrentPDF"/>
+									<Binding Path="PageCurrentDocumentsPath"/>
+									<Binding Path="PageCurrentDesktopPath"/>
+									<Binding Path="PageCurrentDownloadsPath"/>
+								</MultiBinding>
+							</TextBlock.Text>
+							<TextBlock.ToolTip>
+								<MultiBinding Converter="{StaticResource ResourceKey=MainWindowTitleBar}">
+									<Binding Path="PageCurrentPage"/>
+									<Binding Path="HomeCurrentPage"/>
+									<Binding Path="PageCurrentPDF"/>
+									<Binding Path="PageCurrentDocumentsPath"/>
+									<Binding Path="PageCurrentDesktopPath"/>
+									<Binding Path="PageCurrentDownloadsPath"/>
+								</MultiBinding>
+							</TextBlock.ToolTip>
+						</TextBlock>
+						<Button Grid.Column="4" Style="{StaticResource ResourceKey=WindowButton}" Command="{Binding Path=MainWindowMinimiseWindowCommand}" ToolTip="Minimise">
+							<Label Style="{StaticResource ResourceKey=ZoomOutIcon}"/>
+						</Button>
+						<ToggleButton Grid.Column="5" Style="{StaticResource ResourceKey=MaximiseButton}" IsChecked="{Binding Path=MainWindowState, Converter={StaticResource ResourceKey=GeneralWindowStateToBool}}" ToolTip="{Binding Path=MainWindowState, Converter={StaticResource ResourceKey=MainWindowMaximiseButtonToolTip}}"/>
+						<Button Grid.Column="6" Style="{StaticResource ResourceKey=WindowButton}" Command="{Binding Path=MainWindowCloseWindowCommand}" ToolTip="Close">
+							<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+						</Button>
+					</Grid>
+					<Border Grid.Row="1" Style="{StaticResource ResourceKey=MainWindowPageBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1}">
+						<Grid>
+							<Grid Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=0}">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="30"/>
+									<RowDefinition Height="120"/>
+									<RowDefinition Height="30"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="1*"/>
+								</Grid.RowDefinitions>
+								<Border Grid.Row="0" Style="{StaticResource ResourceKey=TextBlockBorder}">
+									<TextBlock Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="PDF tools"/>
+								</Border>
+								<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}">
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="1" ContentStringFormat="Merge PDF">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Copy"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="2" ContentStringFormat="Split PDF">
+											<Grid>
+												<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="File"/>
+												<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Minus"/>
+											</Grid>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="3" ContentStringFormat="Extract pages">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Cut"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="4" ContentStringFormat="Remove pages">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Trash"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="5" ContentStringFormat="Reorder pages">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="ArrowRightArrowLeft"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="6" ContentStringFormat="Rotate pages">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Rotate"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="7" ContentStringFormat="Edit properties">
+											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="FileEdit"/>
+										</Button>
+									</Border>
+								</StackPanel>
+								<Border Grid.Row="2" Style="{StaticResource ResourceKey=TextBlockBorder}">
+									<TextBlock Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="Pinned folders and files"/>
+								</Border>
+								<Border Grid.Row="3" Style="{StaticResource ResourceKey=TextBlockBorder}" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+									<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="No pinned folders or files."/>
+								</Border>
+								<ScrollViewer Grid.Row="4">
+									<StackPanel>
+										<ItemsControl ItemsSource="{Binding Path=HomeFolderList}" ItemTemplate="{StaticResource ResourceKey=HomeFolderDataTemplate}"/>
+										<ItemsControl ItemsSource="{Binding Path=HomeFileList}" ItemTemplate="{StaticResource ResourceKey=HomeFileDataTemplate}"/>
+									</StackPanel>
+								</ScrollViewer>
+							</Grid>
+							<Grid Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1.2.3.4.5.6.7}">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="30"/>
+									<RowDefinition Height="40"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="1*"/>
+								</Grid.RowDefinitions>
+								<Border Grid.Row="0" Style="{StaticResource ResourceKey=TextBlockBorder}">
+									<TextBlock Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=EditPageTitle}}"/>
+								</Border>
+								<Grid Grid.Row="1">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="200"/>
+										<ColumnDefinition Width="200"/>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="200"/>
+									</Grid.ColumnDefinitions>
+									<Border Grid.Column="0" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditBrowseCommandAsync}" ContentStringFormat="Browse">
+											<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FolderOpen"/>
+										</Button>
+									</Border>
+									<Border Grid.Column="1" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditClearCommandAsync}" ContentStringFormat="Clear">
+											<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Icon="Remove"/>
+										</Button>
+									</Border>
+									<Border Grid.Column="3" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=EditSaveButton}" Command="{Binding Path=EditSaveAsCommandAsync}" ContentStringFormat="Save as">
+											<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Icon="Download"/>
+										</Button>
+									</Border>
+								</Grid>
+								<Grid Grid.Row="2"  Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4.5.6.7}">
+									<Border Style="{StaticResource ResourceKey=EditFileBorder}" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}">
+										<Grid>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="1*"/>
+												<RowDefinition Height="30"/>
+											</Grid.RowDefinitions>
+											<Border Grid.Row="0" Style="{StaticResource ResourceKey=TextBlockBorder}">
+												<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="{Binding Path=EditCurrentFile, Converter={StaticResource ResourceKey=SidepanelFileName}}"/>
+											</Border>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2}">
+												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Split mode:"/>
+												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=1}" Command="{Binding Path=EditChangeSplitModeCommand}" ContentStringFormat="Split every page"/>
+												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=2}" Command="{Binding Path=EditChangeSplitModeCommand}" ContentStringFormat="Split every n pages:"/>
+												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSplitEveryNPagesText, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2}"/>
+												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=3}" Command="{Binding Path=EditChangeSplitModeCommand}" ContentStringFormat="Split after pages:"/>
+												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSplitAfterPagesText, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=3}"/>
+											</StackPanel>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=3}">
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Clear selection"/>
+												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Extract mode:"/>
+												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSaveAsIndividualFiles, Converter={StaticResource ResourceKey=GeneralBoolToBool}, ConverterParameter=invert}" ContentStringFormat="Save as one file"/>
+												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSaveAsIndividualFiles, Converter={StaticResource ResourceKey=GeneralBoolToBool}}" ContentStringFormat="Save as individual files"/>
+												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Extract pages:"/>
+												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSelectedPagesText, UpdateSourceTrigger=PropertyChanged}"/>
+											</StackPanel>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=4}">
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Clear selection"/>
+												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Remove pages:"/>
+												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSelectedPagesText, UpdateSourceTrigger=PropertyChanged}"/>
+											</StackPanel>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=5}">
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Reset order"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditReverseOrderCommand}" ContentStringFormat="Reverse order"/>
+											</StackPanel>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=6}">
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Reset all pages"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditRotateAllLeftCommand}" ContentStringFormat="Rotate all left"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditRotateAllRightCommand}" ContentStringFormat="Rotate all right"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditClearSelectionCommand}" ContentStringFormat="Clear selection"/>
+												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Selected pages:"/>
+												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSelectedPagesText, UpdateSourceTrigger=PropertyChanged}"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditRotateSelectedLeftCommand}" ContentStringFormat="Rotate selected left"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditRotateSelectedRightCommand}" ContentStringFormat="Rotate selected right"/>
+											</StackPanel>
+											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=7}">
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Reset properties"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+								</Grid>
+								<Grid Grid.Row="3" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1}">
+									<Border Style="{StaticResource ResourceKey=TextBlockBorder}" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+										<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="No .pdf files selected."/>
+									</Border>
+								</Grid>
+								<Grid Grid.Row="3" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4.5.6.7}">
+									<Border Style="{StaticResource ResourceKey=TextBlockBorder}" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+										<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="No .pdf file selected."/>
+									</Border>
+								</Grid>
+								<ScrollViewer Grid.Row="4" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}">
+									<Grid>
+										<ItemsControl ItemsSource="{Binding Path=EditCurrentFiles}" ItemTemplate="{StaticResource ResourceKey=EditMergePDFDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1}"/>
+										<ItemsControl Style="{StaticResource ResourceKey=EditPagesItemsControl}" ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=EditSplitPDFDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2}"/>
+										<ItemsControl Style="{StaticResource ResourceKey=EditPagesItemsControl}" ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=EditExtractPagesDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=3}"/>
+										<ItemsControl Style="{StaticResource ResourceKey=EditPagesItemsControl}" ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=EditRemovePagesDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=4}"/>
+										<ItemsControl Style="{StaticResource ResourceKey=EditPagesItemsControl}" ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=EditReorderPagesDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=5}"/>
+										<ItemsControl Style="{StaticResource ResourceKey=EditPagesItemsControl}" ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=EditRotatePagesDataTemplate}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=6}"/>
+										<Border Style="{StaticResource ResourceKey=EditPropertiesBorder}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=7}">
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="75"/>
+													<ColumnDefinition Width="1*"/>
+												</Grid.ColumnDefinitions>
+												<Grid.RowDefinitions>
+													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
+												</Grid.RowDefinitions>
+												<TextBlock Grid.Column="0" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Title:"/>
+												<TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditTitleText, UpdateSourceTrigger=PropertyChanged}"/>
+												<TextBlock Grid.Column="0" Grid.Row="1" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Author:"/>
+												<TextBox Grid.Column="1" Grid.Row="1" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditAuthorText, UpdateSourceTrigger=PropertyChanged}"/>
+												<TextBlock Grid.Column="0" Grid.Row="2" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Creator:"/>
+												<TextBox Grid.Column="1" Grid.Row="2" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditCreatorText, UpdateSourceTrigger=PropertyChanged}"/>
+												<TextBlock Grid.Column="0" Grid.Row="3" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Keywords:"/>
+												<TextBox Grid.Column="1" Grid.Row="3" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditKeywordsText, UpdateSourceTrigger=PropertyChanged}"/>
+												<TextBlock Grid.Column="0" Grid.Row="4" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Subject:"/>
+												<TextBox Grid.Column="1" Grid.Row="4" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditSubjectText, UpdateSourceTrigger=PropertyChanged}"/>
+											</Grid>
+										</Border>
+									</Grid>
+								</ScrollViewer>
+								
+							</Grid>
+						</Grid>
+					</Border>
+					<Border Grid.Row="1" Style="{StaticResource ResourceKey=MainWindowPageBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4}">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="40"/>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="1*"/>
+							</Grid.RowDefinitions>
+							<Border Grid.Row="0" Style="{StaticResource ResourceKey=SearchBoxBorder}">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="30"/>
+										<ColumnDefinition Width="250"/>
+										<ColumnDefinition Width="30"/>
+									</Grid.ColumnDefinitions>
+									<TextBox Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=SearchBoxTextBox}" Text="{Binding Path=PageCurrentSearchText, UpdateSourceTrigger=PropertyChanged}"/>
+									<Label Grid.Column="0" Style="{StaticResource ResourceKey=SearchIcon}"/>
+									<TextBlock Grid.Column="1" Style="{StaticResource ResourceKey=SearchBoxPlaceholderTextBlock}" Visibility="{Binding Path=PageCurrentSearchText, Converter={StaticResource ResourceKey=GeneralStringToVisibility}, ConverterParameter=invert}" Text="Search"/>
+									<Border Grid.Column="2" Style="{StaticResource ResourceKey=SearchBoxButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=SearchBoxButton}" Command="{Binding Path=PageClearCurrentSearchTextCommand}"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Grid.Row="1" Style="{StaticResource ResourceKey=TextBlockBorder}" Visibility="{Binding Path=PageEmpty, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+								<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="No folders or .pdf documents were found."/>
+							</Border>
+							<ScrollViewer Grid.Row="2" Visibility="{Binding Path=PageCurrentSearchText, Converter={StaticResource ResourceKey=GeneralStringToVisibility}, ConverterParameter=invert.trim}">
+								<StackPanel>
+									<ItemsControl ItemsSource="{Binding Path=PageCurrentFolders}" ItemTemplate="{StaticResource ResourceKey=PageFolderDataTemplate}"/>
+									<ItemsControl ItemsSource="{Binding Path=PageCurrentFiles}" ItemTemplate="{StaticResource ResourceKey=PageFileDataTemplate}"/>
+								</StackPanel>
+							</ScrollViewer>
+							<ScrollViewer Grid.Row="2"  Visibility="{Binding Path=PageCurrentSearchText, Converter={StaticResource ResourceKey=GeneralStringToVisibility}, ConverterParameter=trim}">
+								<StackPanel>
+									<ItemsControl ItemsSource="{Binding Path=PageCurrentSearchFolders}" ItemTemplate="{StaticResource ResourceKey=PageSearchFolderDataTemplate}"/>
+									<ItemsControl ItemsSource="{Binding Path=PageCurrentSearchFiles}" ItemTemplate="{StaticResource ResourceKey=PageSearchFileDataTemplate}"/>
+								</StackPanel>
+							</ScrollViewer>
+						</Grid>
+					</Border>
+					<Grid Grid.Row="1" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=0}">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="40"/>
+							<RowDefinition Height="1*"/>
+						</Grid.RowDefinitions>
+						<Border Grid.Row="0" Style="{StaticResource ResourceKey=ToolbarBorder}">
+							<Grid>
+								<StackPanel Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}">
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPageViewCommand}" ToolTip="Page view">
+											<Label Style="{StaticResource ResourceKey=PageViewIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarFitCommand}" ToolTip="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=ToolbarFitToolTip}}">
+											<Grid>
+												<Label Style="{StaticResource ResourceKey=FitToHeightIcon}" Visibility="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}"/>
+												<Label Style="{StaticResource ResourceKey=FitToWidthIcon}" Visibility="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}"/>
+											</Grid>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarResetZoomCommand}" ToolTip="Reset zoom">
+											<Label Style="{StaticResource ResourceKey=ResetZoomIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+								</StackPanel>
+								<StackPanel Style="{StaticResource ResourceKey=ToolbarCenterStackPanel}">
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomOutCommand}" ToolTip="Zoom out">
+											<Label Style="{StaticResource ResourceKey=ZoomOutIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomInCommand}" ToolTip="Zoom in">
+											<Label Style="{StaticResource ResourceKey=ZoomInIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<TextBlock Style="{StaticResource ResourceKey=ToolbarTextBlock}" Text="Zoom:"/>
+									<TextBox Style="{StaticResource ResourceKey=ToolbarTextBox}" Text="{Binding Path=ToolbarCurrentZoomText, UpdateSourceTrigger=PropertyChanged}"/>
+									<Rectangle Style="{StaticResource ResourceKey=ToolbarRectangle}"/>
+									<TextBlock Style="{StaticResource ResourceKey=ToolbarTextBlock}" Text="Page:"/>
+									<TextBox Style="{StaticResource ResourceKey=ToolbarTextBox}" Text="{Binding Path=ToolbarCurrentPageText, UpdateSourceTrigger=PropertyChanged}"/>
+									<TextBlock Style="{StaticResource ResourceKey=ToolbarTextBlock}" Text="{Binding Path=PageCurrentPDF.PageCount, StringFormat=of {0}}"/>
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPreviousPageCommand}" ToolTip="Previous page">
+											<Label Style="{StaticResource ResourceKey=LeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarNextPageCommand}" ToolTip="Next page">
+											<Label Style="{StaticResource ResourceKey=RightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+								</StackPanel>
+								<StackPanel Style="{StaticResource ResourceKey=ToolbarRightStackPanel}">
+									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarFindCommand}" ToolTip="Find">
+											<Label Style="{StaticResource ResourceKey=SearchIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarContentsCommand}" ToolTip="Contents">
+											<Label Style="{StaticResource ResourceKey=ContentsIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarThumbnailsCommand}" ToolTip="Thumbnails">
+											<Label Style="{StaticResource ResourceKey=ThumbnailIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+										</Button>
+									</Border>
+									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarDocumentInformationCommand}" ToolTip="Document information">
+											<Label Style="{StaticResource ResourceKey=InfoIcon}"/>
+										</Button>
+									</Border>
+								</StackPanel>
+								<Popup Style="{StaticResource ResourceKey=PageViewPopup}" IsOpen="{Binding Path=ToolbarPageViewOpen}">
+									<Border Style="{StaticResource ResourceKey=PopupBorder}">
+										<Grid>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="40"/>
+												<RowDefinition Height="1*"/>
+												<RowDefinition Height="Auto"/>
+											</Grid.RowDefinitions>
+											<Grid Grid.Row="0">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="1*"/>
+													<ColumnDefinition Width="40"/>
+												</Grid.ColumnDefinitions>
+												<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=PopupTitleTextBlock}" Text="Page view"/>
+												<Border Grid.Column="1"	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+													<Button Style="{StaticResource ResourceKey=PopupButton}" Command="{Binding Path=PopupClosePageViewCommand}" ToolTip="Close">
+														<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+													</Button>
+												</Border>
+											</Grid>
+											<Grid Grid.Row="1">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="40"/>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="Auto"/>
+													<ColumnDefinition Width="40"/>
+													<ColumnDefinition Width="Auto"/>
+												</Grid.ColumnDefinitions>
+												<Grid.RowDefinitions>
+													<RowDefinition Height="40"/>
+													<RowDefinition Height="30"/>
+												</Grid.RowDefinitions>
+												<Border Grid.Column="1" Grid.Row="0" Style="{StaticResource ResourceKey=PopupToggleButtonBorder}">
+													<ToggleButton Style="{StaticResource ResourceKey=PopupToggleButton}" IsChecked="{Binding Path=PopupPageViewTwoPages, Converter={StaticResource ResourceKey=GeneralBoolToBool}, ConverterParameter=invert}" Command="{Binding Path=PopupChangePageViewCommand}">
+														<Label Style="{StaticResource ResourceKey=SinglePageIcon}"/>
+													</ToggleButton>
+												</Border>
+												<Border Grid.Column="4" Grid.Row="0" Style="{StaticResource ResourceKey=PopupToggleButtonBorder}">
+													<ToggleButton Style="{StaticResource ResourceKey=PopupToggleButton}" IsChecked="{Binding Path=PopupPageViewTwoPages, Converter={StaticResource ResourceKey=GeneralBoolToBool}}" Command="{Binding Path=PopupChangePageViewCommand}">
+														<Label Style="{StaticResource ResourceKey=TwoPagesIcon}"/>
+													</ToggleButton>
+												</Border>
+												<TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupSubtitleTextBlock}" Text="Single page"/>
+												<TextBlock Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupSubtitleTextBlock}" Text="Two pages"/>
+											</Grid>
+											<Grid Grid.Row="2" Visibility="{Binding Path=PopupPageViewTwoPages, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="1*"/>
+													<ColumnDefinition Width="40"/>
+												</Grid.ColumnDefinitions>
+												<Grid.RowDefinitions>
+													<RowDefinition Height="7.5"/>
+													<RowDefinition Height="40"/>
+												</Grid.RowDefinitions>
+												<Rectangle Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource ResourceKey=PopupRectangle}"/>
+												<TextBlock Grid.Column="0" Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Show cover page separately:"/>
+												<Border Grid.Column="1" Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+													<ToggleButton Style="{StaticResource ResourceKey=PopupCheckToggleButton}" IsChecked="{Binding Path=PopupPageViewSeparateCoverPage}" Command="{Binding Path=PopupChangePageViewCommand}"/>
+												</Border>
+											</Grid>
+										</Grid>
+									</Border>
+								</Popup>
+							</Grid>
+						</Border>
+						<Grid Grid.Row="1">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="1*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<Border Grid.Column="0" Style="{StaticResource ResourceKey=PDFScrollViewerBorder}">
+								<ScrollViewer Style="{StaticResource ResourceKey=PDFScrollViewer}" Content="{Binding Path=PageView}"/>
+							</Border>
+							<Border	Grid.Column="1" Style="{StaticResource ResourceKey=NavigationBorder}" Visibility="{Binding Path=ToolbarFindOpen, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="40"/>
+										<RowDefinition Height="30"/>
+										<RowDefinition Height="60"/>
+										<RowDefinition Height="Auto"/>
+										<RowDefinition Height="1*"/>
+									</Grid.RowDefinitions>
+									<Grid Grid.Row="0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="1*"/>
+											<ColumnDefinition Width="40"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=NavigationTitleTextBlock}" Text="Find"/>
+										<Border Grid.Column="1" Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+											<Button Style="{StaticResource ResourceKey=PopupButton}" Command="{Binding Path=NavigationCloseFindCommand}" ToolTip="Close">
+												<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+											</Button>
+										</Border>
+									</Grid>
+									<Border Grid.Row="1" Style="{StaticResource ResourceKey=TextBoxBorder}">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="30"/>
+												<ColumnDefinition Width="1*"/>
+												<ColumnDefinition Width="30"/>
+											</Grid.ColumnDefinitions>
+											<TextBox Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=SearchBoxTextBox}" Text="{Binding Path=NavigationCurrentFindText, UpdateSourceTrigger=PropertyChanged}"/>
+											<Label Grid.Column="0" Style="{StaticResource ResourceKey=SearchIcon}"/>
+											<TextBlock Grid.Column="1" Style="{StaticResource ResourceKey=SearchBoxPlaceholderTextBlock}" Visibility="{Binding Path=NavigationCurrentFindText, Converter={StaticResource ResourceKey=GeneralStringToVisibility}, ConverterParameter=invert}" Text="Search"/>
+											<Border Grid.Column="2" Style="{StaticResource ResourceKey=SearchBoxButtonBorder}">
+												<Button Style="{StaticResource ResourceKey=SearchBoxButton}" Command="{Binding Path=NavigationClearCurrentFindTextCommand}"/>
+											</Border>
+										</Grid>
+									</Border>
+									<Border Grid.Row="2" Style="{StaticResource ResourceKey=NavigationTextBorder}">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="1*"/>
+												<ColumnDefinition Width="30"/>
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="30"/>
+												<RowDefinition Height="30"/>
+											</Grid.RowDefinitions>
+											<TextBlock Grid.Column="0" Grid.Row="0" Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="Match case:"/>
+											<Border Grid.Column="1" Grid.Row="0" Style="{StaticResource ResourceKey=NavigationButtonBorder}">
+												<ToggleButton Style="{StaticResource ResourceKey=NavigationCheckToggleButton}" IsChecked="{Binding Path=NavigationFindMatchCase}" Command="{Binding Path=NavigationChangeFindTextOptionsCommandAsync}"/>
+											</Border>
+											<TextBlock Grid.Column="0" Grid.Row="1" Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="Match whole word:"/>
+											<Border Grid.Column="1" Grid.Row="1" Style="{StaticResource ResourceKey=NavigationButtonBorder}">
+												<ToggleButton Style="{StaticResource ResourceKey=NavigationCheckToggleButton}" IsChecked="{Binding Path=NavigationFindMatchWholeWord}" Command="{Binding Path=NavigationChangeFindTextOptionsCommandAsync}"/>
+											</Border>
+										</Grid>
+									</Border>
+									<Border Grid.Row="3" Style="{StaticResource ResourceKey=TextBlockBorder}" Visibility="{Binding Path=NavigationCurrentFindText, Converter={StaticResource ResourceKey=GeneralStringToVisibility}, ConverterParameter=trim}">
+										<TextBlock Style="{StaticResource ResourceKey=MainWindowTitleBarTextBlock}">
+											<TextBlock.Text>
+												<MultiBinding Converter="{StaticResource ResourceKey=NavigationFindResultCount}">
+													<Binding Path="PageLoading"/>
+													<Binding Path="NavigationCurrentFindResults.Count"/>
+												</MultiBinding>
+											</TextBlock.Text>
+										</TextBlock>
+									</Border>
+									<Border Grid.Row="4" Style="{StaticResource ResourceKey=NavigationContentBorder}">
+										<ScrollViewer>
+											<ItemsControl ItemsSource="{Binding Path=NavigationCurrentFindResults}" ItemTemplate="{StaticResource ResourceKey=NavigationFindDataTemplate}" Visibility="{Binding Path=PageLoading, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}"/>
+										</ScrollViewer>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Grid.Column="1" Style="{StaticResource ResourceKey=NavigationBorder}" Visibility="{Binding Path=ToolbarContentsOpen, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="40"/>
+										<RowDefinition Height="1*"/>
+									</Grid.RowDefinitions>
+									<Grid Grid.Row="0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="1*"/>
+											<ColumnDefinition Width="40"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=NavigationTitleTextBlock}" Text="Contents"/>
+										<Border Grid.Column="1" Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+											<Button Style="{StaticResource ResourceKey=PopupButton}" Command="{Binding Path=NavigationCloseContentsCommand}" ToolTip="Close">
+												<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+											</Button>
+										</Border>
+									</Grid>
+									<Border Grid.Row="1" Style="{StaticResource ResourceKey=NavigationContentBorder}">
+										<control:ContentView ItemsSource="{Binding Path=PDFComponent.BookmarkComponent.Bookmarks}" ItemTemplate="{StaticResource ResourceKey=NavigationContentHierarchicalDataTemplate}"/>
+									</Border>
+								</Grid>
+							</Border>
+							<Border Grid.Column="1" Style="{StaticResource ResourceKey=NavigationBorder}" Visibility="{Binding Path=ToolbarThumbnailsOpen, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="40"/>
+										<RowDefinition Height="1*"/>
+									</Grid.RowDefinitions>
+									<Grid Grid.Row="0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="1*"/>
+											<ColumnDefinition Width="40"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=NavigationTitleTextBlock}" Text="Thumbnails"/>
+										<Border Grid.Column="1" Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+											<Button Style="{StaticResource ResourceKey=PopupButton}" Command="{Binding Path=NavigationCloseThumbnailsCommand}" ToolTip="Close">
+												<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+											</Button>
+										</Border>
+									</Grid>
+									<Border Grid.Row="1" Style="{StaticResource ResourceKey=NavigationContentBorder}">
+										<ScrollViewer Style="{StaticResource ResourceKey=PDFScrollViewer}">
+											<ItemsControl ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=NavigationThumbnailTemplate}"/>
+										</ScrollViewer>
+									</Border>
+								</Grid>
+							</Border>
+							<Popup Grid.Column="0" Style="{StaticResource ResourceKey=DocumentInformationPopup}" IsOpen="{Binding Path=ToolbarDocumentInformationOpen}">
+								<Border Style="{StaticResource ResourceKey=PopupBorder}">
+									<Grid>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="40"/>
+											<RowDefinition Height="1*"/>
+										</Grid.RowDefinitions>
+										<Grid Grid.Row="0">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="1*"/>
+												<ColumnDefinition Width="40"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=PopupTitleTextBlock}" Text="Document information"/>
+											<Border Grid.Column="1" Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
+												<Button Style="{StaticResource ResourceKey=PopupButton}" Command="{Binding Path=PopupCloseDocumentInformationCommand}" ToolTip="Close">
+													<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+												</Button>
+											</Border>
+										</Grid>
+										<Grid Grid.Row="1">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="100"/>
+												<ColumnDefinition Width="350"/>
+											</Grid.ColumnDefinitions>
+											<Grid.RowDefinitions>
+												<RowDefinition Height="30"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="7.5"/>
+												<RowDefinition Height="30"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="7.5"/>
+												<RowDefinition Height="30"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+												<RowDefinition Height="20"/>
+											</Grid.RowDefinitions>
+											<TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="File"/>
+											<TextBlock Grid.Column="0" Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="File name:"/>
+											<TextBlock Grid.Column="1" Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.FileName}" ToolTip="{Binding Path=PageCurrentPDF.FileName}"/>
+											<TextBlock Grid.Column="0" Grid.Row="2" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="File path:"/>
+											<TextBlock Grid.Column="1" Grid.Row="2" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.FilePath}" ToolTip="{Binding Path=PageCurrentPDF.FilePath}"/>
+											<TextBlock Grid.Column="0" Grid.Row="3" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Folder name:"/>
+											<TextBlock Grid.Column="1" Grid.Row="3" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.FolderName}" ToolTip="{Binding Path=PageCurrentPDF.FolderName}"/>
+											<TextBlock Grid.Column="0" Grid.Row="4" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="File size:"/>
+											<TextBlock Grid.Column="1" Grid.Row="4" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.FileSize, Converter={StaticResource ResourceKey=GeneralBytesToString}}" ToolTip="{Binding Path=PageCurrentPDF.FileSize, Converter={StaticResource ResourceKey=GeneralBytesToString}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="5" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Creation date:"/>
+											<TextBlock Grid.Column="1" Grid.Row="5" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.CreationDate, StringFormat='dd MMMM yyyy, HH:mm:ss'}">
+												<TextBlock.ToolTip>
+													<ToolTip Content="{Binding Path=PageCurrentPDF.CreationDate}" ContentStringFormat="dd MMMM yyyy, HH:mm:ss"/>
+												</TextBlock.ToolTip>
+											</TextBlock> 
+											<TextBlock Grid.Column="0" Grid.Row="6" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Modified date:"/>
+											<TextBlock Grid.Column="1" Grid.Row="6" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.ModifiedDate, StringFormat='dd MMMM yyyy, HH:mm:ss'}">
+												<TextBlock.ToolTip>
+													<ToolTip Content="{Binding Path=PageCurrentPDF.ModifiedDate}" ContentStringFormat="dd MMMM yyyy, HH:mm:ss"/>
+												</TextBlock.ToolTip>
+											</TextBlock>
+											<Rectangle Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupRectangle}"/>
+											<TextBlock Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="Document"/>
+											<TextBlock Grid.Column="0" Grid.Row="9" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Page count:"/>
+											<TextBlock Grid.Column="1" Grid.Row="9" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.PageCount}" ToolTip="{Binding Path=PageCurrentPDF.PageCount}"/>
+											<TextBlock Grid.Column="0" Grid.Row="10" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Page size(s):"/>
+											<TextBlock Grid.Column="1" Grid.Row="10" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.PageSizes, Converter={StaticResource ResourceKey=ToolbarDocumentInformationDocumentArea}}" ToolTip="{Binding Path=PageCurrentPDF.PageSizes, Converter={StaticResource ResourceKey=ToolbarDocumentInformationDocumentArea}}"/>
+											<Rectangle Grid.Column="0" Grid.Row="11" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupRectangle}"/>
+											<TextBlock Grid.Column="0" Grid.Row="12" Grid.ColumnSpan="3" Style="{StaticResource ResourceKey=PopupHeadingTextBlock}" Text="Properties"/>
+											<TextBlock Grid.Column="0" Grid.Row="13" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Title:"/>
+											<TextBlock Grid.Column="1" Grid.Row="13" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Title, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Title}" Foreground="{Binding Path=PageCurrentPDF.Title, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="14" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Author:"/>
+											<TextBlock Grid.Column="1" Grid.Row="14" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Author, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Author}" Foreground="{Binding Path=PageCurrentPDF.Author, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="15" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Creator:"/>
+											<TextBlock Grid.Column="1" Grid.Row="15" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Creator, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Creator}" Foreground="{Binding Path=PageCurrentPDF.Creator, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="16" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Keywords:"/>
+											<TextBlock Grid.Column="1" Grid.Row="16" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Keywords, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Keywords}" Foreground="{Binding Path=PageCurrentPDF.Keywords, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="17" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Subject:"/>
+											<TextBlock Grid.Column="1" Grid.Row="17" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Subject, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Subject}" Foreground="{Binding Path=PageCurrentPDF.Subject, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+											<TextBlock Grid.Column="0" Grid.Row="18" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="Producer:"/>
+											<TextBlock Grid.Column="1" Grid.Row="18" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PageCurrentPDF.Producer, Converter={StaticResource ResourceKey=ToolbarDocumentInformationText}}" ToolTip="{Binding Path=PageCurrentPDF.Producer}" Foreground="{Binding Path=PageCurrentPDF.Producer, Converter={StaticResource ResourceKey=ToolbarDocumentInformationTextForeground}}"/>
+										</Grid>
+									</Grid>
+								</Border>
+							</Popup>
+						</Grid>
+					</Grid>
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>

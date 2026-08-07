@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>PDF_Editor</AssemblyName>
+		<AssemblyTitle>PDF Editor</AssemblyTitle>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishSingleFile>true</PublishSingleFile>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	</PropertyGroup>
+	<ItemGroup>
+		<ApplicationDefinition Include="Source\Styles\App.xaml" />
+		<Content Include="PDFium\x64\pdfium.dll" CopyToOutputDirectory="Always" />
+		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
+		<PackageReference Include="PDFiumDotNET.WpfControls" Version="1.0.4" />
+		<PackageReference Include="PDFsharp" Version="6.2.4" />
+		<PackageReference Include="PDFtoImage" Version="5.2.1" />
+	</ItemGroup>
+</Project>

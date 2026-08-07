@@ -1,0 +1,301 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:viewer="clr-namespace:PDFiumDotNET.WpfControls;assembly=PDFiumDotNET.WpfControls"
+					xmlns:icon="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+					xmlns:control="clr-namespace:PDF_Editor.Source.Controls">
+	<Style TargetType="Border" x:Key="ButtonNavigationItemPaddingBorder">
+		<Setter Property="Padding" Value="2.5,10,2.5,10"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ButtonPaddingBorder">
+		<Setter Property="Padding" Value="0,10,0,10"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ButtonPopupBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ButtonRoundedCornersBorder">
+		<Setter Property="CornerRadius" Value="2.5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditButtonBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>
+		<Setter Property="Margin" Value="5"/>
+		<Setter Property="Width" Value="110"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditFileBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+		<Setter Property="Margin" Value="5"/>
+		<Setter Property="Padding" Value="5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditItemButtonBorder">
+		<Setter Property="Height" Value="35"/>
+		<Setter Property="Margin" Value="2.5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditPageBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+		<Setter Property="Padding" Value="5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditPropertiesBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="Margin" Value="5"/>
+		<Setter Property="Padding" Value="5"/>
+		<Setter Property="VerticalAlignment" Value="Top"/>
+	</Style>
+	<Style TargetType="Border" x:Key="EditToolButtonBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+		<Setter Property="Margin" Value="5,0,5,10"/>
+	</Style>
+	<Style TargetType="Border" x:Key="MainWindowPageBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
+		<Setter Property="Padding" Value="5,10,5,10"/>
+	</Style>
+	<Style TargetType="Border" x:Key="MainWindowTitleBarButtonBorder">
+		<Setter Property="Width" Value="30"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
+		<Setter Property="Width" Value="200"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationButtonBorder">
+		<Setter Property="Margin" Value="2.5"/>
+		<Setter Property="Width" Value="25"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationContentBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Dark}"/>
+		<Setter Property="BorderThickness" Value="0,1,0,0"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationItemButtonBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="BorderThickness" Value="0,0,0,1"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationItemExpandButtonBorder">
+		<Setter Property="Height" Value="30"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationTextBorder">
+		<Setter Property="Margin" Value="7.5,0,5,0"/>
+	</Style>
+	<Style TargetType="Border" x:Key="NavigationThumbnailBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="Margin" Value="10,10,10,0"/>
+	</Style>
+	<Style TargetType="Border" x:Key="PageButtonBorder">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="BorderThickness" Value="0,0,0,1"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="Border" x:Key="PDFScrollViewerBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Dark}"/>
+	</Style>
+	<Style TargetType="Border" x:Key="PopupBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="2.5"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="Padding" Value="10"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="Border" x:Key="PopupToggleButtonBorder">
+		<Setter Property="Margin" Value="2.5"/>
+		<Setter Property="Width" Value="35"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ScrollBarBorder">
+		<Setter Property="Width" Value="8"/>
+	</Style>
+	<Style TargetType="Border" x:Key="SearchBoxBorder">
+		<Setter Property="Margin" Value="5,0,5,10"/>
+	</Style>
+	<Style TargetType="Border" x:Key="SearchBoxButtonBorder">
+		<Setter Property="Margin" Value="1"/>
+	</Style>
+	<Style TargetType="Border" x:Key="SidepanelBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Primary}"/>
+	</Style>
+	<Style TargetType="Border" x:Key="SidepanelButtonBorder">
+		<Setter Property="Height" Value="35"/>
+		<Setter Property="Margin" Value="5,2.5,5,2.5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="SidepanelCollapseButtonBorder">
+		<Setter Property="Margin" Value="5,2.5,5,5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="TextBlockBorder">
+		<Setter Property="Margin" Value="5"/>
+	</Style>
+	<Style TargetType="Border" x:Key="TextBoxBorder">
+		<Setter Property="Margin" Value="5,0,5,0"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ThumbBorder">
+		<Setter Property="CornerRadius" Value="4"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ToolbarBorder">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ToolbarButtonBorder">
+		<Setter Property="Margin" Value="2.5"/>
+		<Setter Property="Width" Value="35"/>
+	</Style>
+	<Style TargetType="Ellipse" x:Key="ButtonEllipse">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="StrokeThickness" Value="1"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="Image">
+		<Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+	</Style>
+	<Style TargetType="ItemsControl">
+		<Setter Property="Focusable" Value="False"/>
+	</Style>
+	<Style TargetType="ItemsControl" x:Key="EditPagesItemsControl">
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="ItemsPanel">
+			<Setter.Value>
+				<ItemsPanelTemplate>
+					<WrapPanel/>
+				</ItemsPanelTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style TargetType="Line" x:Key="ButtonLine">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="StrokeThickness" Value="1"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="MenuItem">
+		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Body}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Style.Triggers>
+			<Trigger Property="IsEnabled" Value="False">
+				<Setter Property="Foreground" Value="{StaticResource ResourceKey=DarkGrey}"/>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+	<Style TargetType="Path" x:Key="ButtonPath">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="StrokeThickness" Value="1"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="Polygon" x:Key="ButtonPolygon">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="Popup" x:Key="DefaultPopup">
+		<Setter Property="AllowsTransparency" Value="True"/>
+		<Setter Property="StaysOpen" Value="False"/>
+	</Style>
+	<Style TargetType="Popup" x:Key="DocumentInformationPopup" BasedOn="{StaticResource ResourceKey=DefaultPopup}">
+		<Setter Property="Placement" Value="Center"/>
+	</Style>
+	<Style TargetType="Popup" x:Key="PageViewPopup" BasedOn="{StaticResource ResourceKey=DefaultPopup}">
+		<Setter Property="HorizontalOffset" Value="10"/>
+		<Setter Property="VerticalOffset" Value="10"/>
+	</Style>
+	<Style TargetType="Rectangle" x:Key="PopupRectangle">
+		<Setter Property="Fill" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="Height" Value="1"/>
+	</Style>
+	<Style TargetType="Rectangle" x:Key="SidepanelRectangle">
+		<Setter Property="Fill" Value="{StaticResource ResourceKey=Secondary}"/>
+		<Setter Property="Height" Value="2.5"/>
+		<Setter Property="Margin" Value="10,0,10,0"/>
+	</Style>
+	<Style TargetType="Rectangle" x:Key="SidepanelButtonRectangle">
+		<Setter Property="Fill" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="Height" Value="20"/>
+		<Setter Property="HorizontalAlignment" Value="Left"/>
+		<Setter Property="Margin" Value="5,0,5,0"/>
+		<Setter Property="RadiusX" Value="1.25"/>
+		<Setter Property="RadiusY" Value="1.25"/>
+		<Setter Property="Width" Value="2.5"/>
+	</Style>
+	<Style TargetType="Rectangle" x:Key="ToolbarRectangle">
+		<Setter Property="Fill" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="Margin" Value="2.5,7.5,2.5,7.5"/>
+		<Setter Property="Width" Value="1"/>
+	</Style>
+	<Style TargetType="ScrollViewer">
+		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+	</Style>
+	<Style TargetType="ScrollViewer" x:Key="PDFScrollViewer">
+		<Setter Property="CanContentScroll" Value="True"/>
+		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+	</Style>
+	<Style TargetType="ScrollViewer" x:Key="SidepanelScrollViewer">
+		<Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+	</Style>
+	<Style TargetType="StackPanel" x:Key="SidePanelTitleStackPanel">
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="StackPanel" x:Key="ToolbarCenterStackPanel">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="Orientation" Value="Horizontal"/>
+	</Style>
+	<Style TargetType="StackPanel" x:Key="ToolbarLeftStackPanel">
+		<Setter Property="Orientation" Value="Horizontal"/>
+	</Style>
+	<Style TargetType="StackPanel" x:Key="ToolbarRightStackPanel">
+		<Setter Property="HorizontalAlignment" Value="Right"/>
+		<Setter Property="Orientation" Value="Horizontal"/>
+	</Style>
+	<Style TargetType="ToolTip">
+		<Setter Property="MaxWidth" Value="250"/>
+		<Style.Resources>
+			<Style TargetType="ContentPresenter">
+				<Style.Resources>
+					<Style TargetType="TextBlock" BasedOn="{StaticResource ResourceKey=DefaultTextBlock}">
+						<Setter Property="HorizontalAlignment" Value="Left"/>
+						<Setter Property="TextWrapping" Value="Wrap"/>
+					</Style>
+				</Style.Resources>
+			</Style>
+		</Style.Resources>
+	</Style>
+	<Style TargetType="Viewbox">
+		<Setter Property="Width" Value="175"/>
+	</Style>
+	<Style TargetType="Window" x:Key="MainWindow">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="Height" Value="600"/>
+		<Setter Property="MinHeight" Value="600"/>
+		<Setter Property="MinWidth" Value="1000"/>
+		<Setter Property="Width" Value="1000"/>
+		<Setter Property="WindowChrome.WindowChrome">
+			<Setter.Value>
+				<WindowChrome/>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style TargetType="WrapPanel">
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="control:ContentView">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Continue"/>
+		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue"/>
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+	</Style>
+	<Style TargetType="viewer:PDFView">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Transparent}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="PDFFindSelectionBackground" Value="{StaticResource ResourceKey=PrimaryColor}"/>
+		<Setter Property="PDFFindSelectionBorder" Value="{StaticResource ResourceKey=TransparentColor}"/>
+		<Setter Property="PDFPageActiveBorderThickness" Value="0"/>
+		<Setter Property="PDFPageBorderThickness" Value="0"/>
+	</Style>
+</ResourceDictionary>

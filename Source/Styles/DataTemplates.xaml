@@ -1,0 +1,413 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:sys="clr-namespace:System;assembly=mscorlib"
+					xmlns:icon="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
+					xmlns:find="clr-namespace:PDFiumDotNET.Components.Contracts.Find;assembly=PDFiumDotNET.Components.Contracts"
+					xmlns:bookmark="clr-namespace:PDFiumDotNET.Components.Contracts.Bookmark;assembly=PDFiumDotNET.Components.Contracts"
+					xmlns:control="clr-namespace:PDF_Editor.Source.Controls"
+					xmlns:model="clr-namespace:PDF_Editor.Source.Models">
+	<DataTemplate x:Key="EditExtractPagesDataTemplate" DataType="model:EditPageModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}" BorderBrush="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderBrush}}" BorderThickness="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}}">
+			<ToggleButton Style="{StaticResource ResourceKey=EditPageExtractToggleButton}" IsChecked="{Binding Path=IsSelected}" Margin="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}, ConverterParameter=invert}" Command="{Binding Path=DataContext.EditSelectPageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+				<StackPanel>
+					<Viewbox>
+						<Image Source="{Binding Path=Thumbnail}"/>
+					</Viewbox>
+					<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+				</StackPanel>
+			</ToggleButton>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="EditMergePDFDataTemplate" DataType="model:EditFileModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="30"/>
+					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="40"/>
+					<ColumnDefinition Width="40"/>
+					<ColumnDefinition Width="40"/>
+				</Grid.ColumnDefinitions>
+				<TextBlock Grid.Column="0" Style="{StaticResource ResourceKey=EditButtonTitleTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+				<Border Grid.Column="1" Style="{StaticResource ResourceKey=TextBlockBorder}">
+					<StackPanel Style="{StaticResource ResourceKey=SidePanelTitleStackPanel}">
+						<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="{Binding Path=FileName}"/>
+						<TextBlock Style="{StaticResource ResourceKey=PageButtonSubtitleTextBlock}" Text="{Binding Path=PageCountText}"/>
+					</StackPanel>
+				</Border>
+				<Border Grid.Column="2" Style="{StaticResource ResourceKey=EditItemButtonBorder}">
+					<Button Style="{StaticResource ResourceKey=EditItemButton}" Command="{Binding Path=DataContext.EditMoveUpCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Move up">
+						<Label Style="{StaticResource ResourceKey=UpIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+				</Border>
+				<Border Grid.Column="3" Style="{StaticResource ResourceKey=EditItemButtonBorder}">
+					<Button Style="{StaticResource ResourceKey=EditItemButton}"  Command="{Binding Path=DataContext.EditMoveDownCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Move down">
+						<Label Style="{StaticResource ResourceKey=DownIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+				</Border>
+				<Border Grid.Column="4" Style="{StaticResource ResourceKey=EditItemButtonBorder}">
+					<Button Style="{StaticResource ResourceKey=EditItemButton}"  Command="{Binding Path=DataContext.EditRemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Remove">
+						<Label Style="{StaticResource ResourceKey=CloseIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+				</Border>
+			</Grid>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="EditRemovePagesDataTemplate" DataType="model:EditPageModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}" BorderBrush="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderBrush}}" BorderThickness="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}}">
+			<ToggleButton Style="{StaticResource ResourceKey=EditPageRemoveToggleButton}" IsChecked="{Binding Path=IsSelected}" Margin="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}, ConverterParameter=invert}" Command="{Binding Path=DataContext.EditSelectPageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+				<StackPanel>
+					<Viewbox>
+						<Image Source="{Binding Path=Thumbnail}"/>
+					</Viewbox>
+					<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+				</StackPanel>
+			</ToggleButton>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="EditReorderPagesDataTemplate" DataType="model:EditPageModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="1*"/>
+					<RowDefinition Height="40"/>
+				</Grid.RowDefinitions>
+				<Viewbox Grid.Row="0">
+					<Image Source="{Binding Path=Thumbnail}"/>
+				</Viewbox>
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="40"/>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="40"/>
+						<ColumnDefinition Width="1*"/>
+					</Grid.ColumnDefinitions>
+					<Button Grid.Column="1" Style="{StaticResource ResourceKey=EditItemButton}" Command="{Binding Path=DataContext.EditMoveLeftCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Move left">
+						<Label Style="{StaticResource ResourceKey=LeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+					<TextBlock Grid.Column="3" Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+					<Button Grid.Column="5" Style="{StaticResource ResourceKey=EditItemButton}" Command="{Binding Path=DataContext.EditMoveRightCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Move right">
+						<Label Style="{StaticResource ResourceKey=RightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+				</Grid>
+			</Grid>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="EditRotatePagesDataTemplate" DataType="model:EditPageModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}" BorderBrush="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderBrush}}" BorderThickness="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}}">
+			<Grid Margin="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}, ConverterParameter=invert}">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="1*"/>
+					<RowDefinition Height="40"/>
+				</Grid.RowDefinitions>
+				<ToggleButton Grid.Row="0" Style="{StaticResource ResourceKey=EditPageExtractToggleButton}" IsChecked="{Binding Path=IsSelected}" Command="{Binding Path=DataContext.EditSelectPageCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}">
+					<Viewbox>
+						<Image Source="{Binding Path=Thumbnail}" LayoutTransform="{Binding Path=RotateTransform}"/>
+					</Viewbox>
+					<ToggleButton.ToolTip>
+						<ToolTip Content="{Binding Path=Rotate}" ContentStringFormat="Rotation: {0}°"/>
+					</ToggleButton.ToolTip>
+				</ToggleButton>
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="40"/>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="40"/>
+						<ColumnDefinition Width="1*"/>
+					</Grid.ColumnDefinitions>
+					<Button Grid.Column="1" Style="{StaticResource ResourceKey=EditItemButton}" Command="{Binding Path=DataContext.EditRotateLeftCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Rotate left">
+						<Label Style="{StaticResource ResourceKey=RotateLeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+					<TextBlock Grid.Column="3" Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+					<Button Grid.Column="5" Style="{StaticResource ResourceKey=EditItemButton}" Command="{Binding Path=DataContext.EditRotateRightCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="Rotate right">
+						<Label Style="{StaticResource ResourceKey=RotateRightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+					</Button>
+				</Grid>
+			</Grid>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="EditSplitPDFDataTemplate" DataType="model:EditPageModel">
+		<Border Style="{StaticResource ResourceKey=EditFileBorder}">
+			<StackPanel>
+				<Viewbox>
+					<Image Source="{Binding Path=Thumbnail}"/>
+				</Viewbox>
+				<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+			</StackPanel>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="HomeFileDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=UpIcon}" Command="{Binding Path=PlacementTarget.Tag.PageMoveUpCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move up"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=DownIcon}" Command="{Binding Path=PlacementTarget.Tag.PageMoveDownCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move down"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.PageUnpinCommandAsync, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Unpin">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="HomeFolderDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFolderCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FolderClosed"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=UpIcon}" Command="{Binding Path=PlacementTarget.Tag.PageMoveUpCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move up"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=DownIcon}" Command="{Binding Path=PlacementTarget.Tag.PageMoveDownCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move down"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.PageUnpinCommandAsync, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Unpin">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="NavigationFindDataTemplate" DataType="find:IPDFFindPosition">
+		<Border	Style="{StaticResource ResourceKey=NavigationItemButtonBorder}">
+			<Button Style="{StaticResource ResourceKey=NavigationItemButton}" Command="{Binding Path=DataContext.NavigationFindNavigateCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1*"/>
+						<ColumnDefinition Width="20"/>
+					</Grid.ColumnDefinitions>
+					<Border Grid.Column="0" Style="{StaticResource ResourceKey=TextBoxBorder}">
+						<TextBlock Style="{StaticResource ResourceKey=NavigationTextBlock}">
+							<TextBlock.Text>
+								<MultiBinding Converter="{StaticResource ResourceKey=NavigationFindResultContext}">
+									<Binding Path="Context"/>
+									<Binding Path="DataContext.NavigationCurrentFindText" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+								</MultiBinding>
+							</TextBlock.Text>
+						</TextBlock>
+					</Border>
+					<TextBlock Grid.Column="1" Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="{Binding Path=Page.RelatedPage.PageIndex, Converter={StaticResource ResourceKey=NavigationFindResultPageIndex}}"/>
+				</Grid>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="NavigationThumbnailTemplate" DataType="model:EditPageModel">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="1*"/>
+				<RowDefinition Height="20"/>
+			</Grid.RowDefinitions>
+			<Border Grid.Row="0" Style="{StaticResource ResourceKey=NavigationThumbnailBorder}" BorderBrush="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderBrush}}" BorderThickness="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}}">
+				<ToggleButton Style="{StaticResource ResourceKey=NavigationThumbnailToggleButton}" IsChecked="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=GeneralBoolToBool}}"  Margin="{Binding Path=IsSelected, Converter={StaticResource ResourceKey=EditThumbnailBorderThickness}, ConverterParameter=invert}" Command="{Binding Path=DataContext.NavigationThumbnailNavigateCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}">
+					<Image Source="{Binding Path=Thumbnail}"/>
+				</ToggleButton>
+			</Border>
+			<TextBlock Grid.Row="1" Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="{Binding Path=DisplayIndex}"/>
+		</Grid>
+	</DataTemplate>
+	<DataTemplate x:Key="PageFileDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuPinCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Pin file">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ZoomInIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="PageFolderDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageButton}" Command="{Binding Path=DataContext.PageOpenFolderCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FolderClosed"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuPinCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Pin folder">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ZoomInIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="PageSearchFileDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuPinCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Pin file">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ZoomInIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="PageSearchFolderDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFolderCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FolderClosed"/>
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuPinCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Pin folder">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ZoomInIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="SidepanelDataTemplate" DataType="sys:String">
+		<Border Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
+			<ToggleButton Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=SidepanelFileToggleButton}" Command="{Binding Path=DataContext.SidepanelFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ToolTip="{Binding}" ContentStringFormat="{Binding Converter={StaticResource ResourceKey=SidepanelFileName}}">
+				<ToggleButton.IsChecked>
+					<MultiBinding Converter="{StaticResource ResourceKey=SidepanelFileButton}">
+						<Binding Path="DataContext.PageCurrentPage" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+						<Binding Path="DataContext.PageCurrentPDF" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+						<Binding Mode="OneWay"/>
+					</MultiBinding>
+				</ToggleButton.IsChecked>
+				<ToggleButton.ContextMenu>
+					<ContextMenu>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuOpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Open in Explorer">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=ExplorerIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuCopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Copy path">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CopyIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=UpIcon}" Command="{Binding Path=PlacementTarget.Tag.ContextMenuMoveUpCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move up"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<MenuItem Icon="{Binding Path=IsEnabled, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource ResourceKey=ContextMenuItemIcon}, ConverterParameter=DownIcon}" Command="{Binding Path=PlacementTarget.Tag.ContextMenuMoveDownCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}">
+							<MenuItem.Header>
+								<TextBlock Style="{StaticResource ResourceKey=PopupTextBlock}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=MenuItem}}" Text="Move down"/>
+							</MenuItem.Header>
+						</MenuItem>
+						<Separator/>
+						<MenuItem Command="{Binding Path=PlacementTarget.Tag.ContextMenuRemoveCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Remove">
+							<MenuItem.Icon>
+								<Label Style="{StaticResource ResourceKey=CloseIcon}"/>
+							</MenuItem.Icon>
+						</MenuItem>
+					</ContextMenu>
+				</ToggleButton.ContextMenu>
+			</ToggleButton>
+		</Border>
+	</DataTemplate>
+	<HierarchicalDataTemplate x:Key="NavigationContentHierarchicalDataTemplate" DataType="bookmark:IPDFBookmark" ItemsSource="{Binding Path=Bookmarks}">
+		<Border Style="{StaticResource ResourceKey=NavigationItemButtonBorder}">
+			<Button Style="{StaticResource ResourceKey=NavigationItemButton}" Command="{Binding Path=DataContext.NavigationContentNavigateCommand, RelativeSource={RelativeSource AncestorType=control:ContentView}}" CommandParameter="{Binding}">
+				<TextBlock Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="{Binding Path=Text}"/>
+			</Button>
+		</Border>
+	</HierarchicalDataTemplate>
+</ResourceDictionary>
