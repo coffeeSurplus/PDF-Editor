@@ -27,7 +27,7 @@ using System.Windows.Threading;
 
 namespace PDF_Editor.Source.ViewModels;
 
-internal class MainWindowViewModel : ObservableObject
+internal class MainWindowViewModel : ObservableObject // TODO add application icon
 {
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
 	private readonly SaveFileDialog saveFileDialog = new() { DefaultExt = ".pdf", Filter = "PDF File (*.pdf)|*.pdf|All files (*.*)|*.*", FilterIndex = 2 };

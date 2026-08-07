@@ -9,13 +9,21 @@
 		<Nullable>enable</Nullable>
 		<PublishSingleFile>true</PublishSingleFile>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>none</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
 		<ApplicationDefinition Include="Source\Styles\App.xaml" />
-		<Content Include="PDFium\x64\pdfium.dll" CopyToOutputDirectory="Always" />
+		<Content Include="pdfium.dll" CopyToOutputDirectory="Always" />
 		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
 		<PackageReference Include="PDFiumDotNET.WpfControls" Version="1.0.4" />
 		<PackageReference Include="PDFsharp" Version="6.2.4" />
-		<PackageReference Include="PDFtoImage" Version="5.2.1" />
+		<PackageReference Include="PDFtoImage" Version="5.3.0" />
 	</ItemGroup>
 </Project>
