@@ -75,12 +75,12 @@ I've uploaded the application as an executeable file to the releases section - t
 
 ## Build
 
-Building the application requires pdfium.dll in the base directory for PdfiumDotNET.WpfControls to run.
+Building the application requires pdfium.dll in the base directory for PdfiumDotNET.WPFControls to run.
 
 ## Libraries used
 
 * FontAwesome.Sharp (6.6.0) - for Sidepanel and PDF tool icons
-* PDFiumDotNET.WpfControls (1.0.4) - for viewing PDF documents
+* PDFiumDotNET.WPFControls (1.0.4) - for viewing PDF documents
 * PDFsharp (6.2.4) - for PDF tools
 * PDFtoImage (5.2.1) - for PDF document page thumbnails
 
