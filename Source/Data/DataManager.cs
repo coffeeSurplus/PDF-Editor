@@ -34,16 +34,20 @@ internal static class DataManager
 	}
 	public static async Task WriteFileAsync(ObservableCollection<string> data, string filePath)
 	{
-		await LockFile(filePath);
-		if (!File.Exists(baseFolder))
+		try
 		{
-			Directory.CreateDirectory(baseFolder);
+			await LockFile(filePath);
+			if (!File.Exists(baseFolder))
+			{
+				Directory.CreateDirectory(baseFolder);
+			}
+			await using StreamWriter writer = new(filePath);
+			foreach (string line in data)
+			{
+				await writer.WriteLineAsync(line);
+			}
 		}
-		await using StreamWriter writer = new(filePath);
-		foreach (string line in data)
-		{
-			await writer.WriteLineAsync(line);
-		}
+		catch (IOException) { }
 		ReleaseFile(filePath);
 	}
 
