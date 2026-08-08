@@ -19,6 +19,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ApplicationDefinition Include="Source\Styles\App.xaml" />
+		<Content Include="pdfium.dll" CopyToOutputDirectory="Always" />
 		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
 		<PackageReference Include="PDFiumDotNET.WpfControls" Version="1.0.4" />
 		<PackageReference Include="PDFsharp" Version="6.2.4" />
