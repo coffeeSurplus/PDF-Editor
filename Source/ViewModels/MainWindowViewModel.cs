@@ -1164,33 +1164,29 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 				PDFComponent.OpenDocument(parameter);
 				(PageCurrentPage, PageCurrentPDF, PageLoading, ToolbarFitToHeight, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), true, false, false, false, false, false, false, false, false);
 				PopupChangePageView();
-				try
+				await Task.Run(async () =>
 				{
-					await Task.Run(async () =>
+					cancellationToken.ThrowIfCancellationRequested();
+					byte[] file = await File.ReadAllBytesAsync(parameter);
+					cancellationToken.ThrowIfCancellationRequested();
+					int displayIndex = 1;
+					await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
 					{
 						cancellationToken.ThrowIfCancellationRequested();
-						byte[] file = await File.ReadAllBytesAsync(parameter);
-						cancellationToken.ThrowIfCancellationRequested();
-						int displayIndex = 1;
-						await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
+						BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+						thumbnail.Freeze();
+						await Application.Current.Dispatcher.BeginInvoke(() =>
 						{
-							cancellationToken.ThrowIfCancellationRequested();
-							BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
-							thumbnail.Freeze();
-							await Application.Current.Dispatcher.BeginInvoke(() =>
+							if (!cancellationToken.IsCancellationRequested)
 							{
-								if (!cancellationToken.IsCancellationRequested)
-								{
-									EditCurrentPages.Add(new(thumbnail, displayIndex));
-									displayIndex++;
-								}
-							}, DispatcherPriority.Background);
-						}
-					});
-					PageLoading = false;
-					CommandManager.InvalidateRequerySuggested();
-				}
-				catch (OperationCanceledException) { }
+								EditCurrentPages.Add(new(thumbnail, displayIndex));
+								displayIndex++;
+							}
+						}, DispatcherPriority.Background);
+					}
+				});
+				PageLoading = false;
+				CommandManager.InvalidateRequerySuggested();
 			}
 			else
 			{

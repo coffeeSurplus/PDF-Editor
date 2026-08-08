@@ -5,6 +5,7 @@
 		<UseWPF>true</UseWPF>
 		<AssemblyName>PDF_Editor</AssemblyName>
 		<AssemblyTitle>PDF Editor</AssemblyTitle>
+		<ApplicationIcon>Source/Resources/Icon.ico</ApplicationIcon>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PublishSingleFile>true</PublishSingleFile>
