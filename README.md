@@ -75,7 +75,7 @@ I've uploaded the application as an executeable file to the releases section - t
 
 ## Build
 
-Building the application requires pdfium.dll in the base directory for PdfiumDotNET.WPFControls to run.
+Building the application requires a win-x64 runtime identifier, with pdfium.dll in the base directory for PdfiumDotNET.WPFControls to run.
 
 ## Libraries used
 
