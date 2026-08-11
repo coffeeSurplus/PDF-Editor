@@ -229,6 +229,24 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style TargetType="Label" x:Key="LineLeftIcon" BasedOn="{StaticResource ResourceKey=DefaultLabel}">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Label">
+					<Polygon Style="{StaticResource ResourceKey=ButtonPolygon}" Fill="{TemplateBinding Property=Foreground}" Points="0,5 7.5,0 7.5,10"/>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style TargetType="Label" x:Key="LineRightIcon" BasedOn="{StaticResource ResourceKey=DefaultLabel}">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Label">
+					<Polygon Style="{StaticResource ResourceKey=ButtonPolygon}" Fill="{TemplateBinding Property=Foreground}" Points="0,0 7.5,5 0,10"/>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<Style TargetType="Label" x:Key="LineUpIcon" BasedOn="{StaticResource ResourceKey=DefaultLabel}">
 		<Setter Property="Template">
 			<Setter.Value>

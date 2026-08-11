@@ -111,8 +111,11 @@
 		<Setter Property="Margin" Value="2.5"/>
 		<Setter Property="Width" Value="35"/>
 	</Style>
-	<Style TargetType="Border" x:Key="ScrollBarBorder">
+	<Style TargetType="Border" x:Key="ScrollBarVerticalBorder">
 		<Setter Property="Width" Value="8"/>
+	</Style>
+	<Style TargetType="Border" x:Key="ScrollBarHorizontalBorder">
+		<Setter Property="Height" Value="8"/>
 	</Style>
 	<Style TargetType="Border" x:Key="SearchBoxBorder">
 		<Setter Property="Margin" Value="5,0,5,10"/>
@@ -227,12 +230,50 @@
 	</Style>
 	<Style TargetType="ScrollViewer">
 		<Setter Property="Focusable" Value="False"/>
-		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
 	</Style>
 	<Style TargetType="ScrollViewer" x:Key="PDFScrollViewer">
-		<Setter Property="Focusable" Value="False"/>
 		<Setter Property="CanContentScroll" Value="True"/>
-		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+		<Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="ScrollViewer">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="1*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="1*"/>
+							<RowDefinition Height="Auto"/>
+						</Grid.RowDefinitions>
+						<ScrollContentPresenter Grid.Column="0" Grid.Row="0" CanContentScroll="{TemplateBinding Property=CanContentScroll}" Content="{TemplateBinding Property=Content}"/>
+						<ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Grid.Row="0" Maximum="{TemplateBinding Property=ScrollableHeight}" ViewportSize="{TemplateBinding Property=ViewportHeight}" Visibility="{TemplateBinding Property=ComputedVerticalScrollBarVisibility}" Value="{TemplateBinding Property=VerticalOffset}" Orientation="Vertical"/>
+						<ScrollBar x:Name="PART_HorizontalScrollBar" Grid.Column="0" Grid.Row="1" Maximum="{TemplateBinding Property=ScrollableWidth}" ViewportSize="{TemplateBinding Property=ViewportWidth}" Visibility="{TemplateBinding Property=ComputedHorizontalScrollBarVisibility}" Value="{TemplateBinding Property=HorizontalOffset}" Orientation="Horizontal"/>
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Style.Resources>
+			<Style TargetType="ScrollContentPresenter">
+				<Setter Property="Height">
+					<Setter.Value>
+						<MultiBinding Converter="{StaticResource ResourceKey=MainWindowDPIScale}" ConverterParameter="Y">
+							<Binding Path="ActualHeight" RelativeSource="{RelativeSource AncestorType=Border}"/>
+							<Binding Path="ComputedHorizontalScrollBarVisibility" RelativeSource="{RelativeSource AncestorType=ScrollViewer}"/>
+						</MultiBinding>
+					</Setter.Value>
+				</Setter>
+				<Setter Property="RenderTransform" Value="{Binding Converter={StaticResource ResourceKey=MainWindowDPIScaleBack}}"/>
+				<Setter Property="Width">
+					<Setter.Value>
+						<MultiBinding Converter="{StaticResource ResourceKey=MainWindowDPIScale}" ConverterParameter="X">
+							<Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Border}"/>
+							<Binding Path="ComputedVerticalScrollBarVisibility" RelativeSource="{RelativeSource AncestorType=ScrollViewer}"/>
+						</MultiBinding>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</Style.Resources>
 	</Style>
 	<Style TargetType="ScrollViewer" x:Key="SidepanelScrollViewer">
 		<Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
@@ -250,6 +291,9 @@
 	<Style TargetType="StackPanel" x:Key="ToolbarRightStackPanel">
 		<Setter Property="HorizontalAlignment" Value="Right"/>
 		<Setter Property="Orientation" Value="Horizontal"/>
+	</Style>
+	<Style TargetType="Track" x:Key="HorizontalTrack">
+		<Setter Property="IsDirectionReversed" Value="False"/>
 	</Style>
 	<Style TargetType="ToolTip">
 		<Setter Property="MaxWidth" Value="250"/>

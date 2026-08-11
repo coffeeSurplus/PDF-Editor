@@ -646,7 +646,7 @@
 										</Border>
 									</Grid>
 									<Border Grid.Row="1" Style="{StaticResource ResourceKey=NavigationContentBorder}">
-										<ScrollViewer Style="{StaticResource ResourceKey=PDFScrollViewer}">
+										<ScrollViewer>
 											<ItemsControl ItemsSource="{Binding Path=EditCurrentPages}" ItemTemplate="{StaticResource ResourceKey=NavigationThumbnailTemplate}"/>
 										</ScrollViewer>
 									</Border>

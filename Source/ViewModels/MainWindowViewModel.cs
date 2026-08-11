@@ -27,7 +27,7 @@ using System.Windows.Threading;
 
 namespace PDF_Editor.Source.ViewModels;
 
-internal class MainWindowViewModel : ObservableObject // TODO add application icon
+internal class MainWindowViewModel : ObservableObject
 {
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
 	private readonly SaveFileDialog saveFileDialog = new() { DefaultExt = ".pdf", Filter = "PDF File (*.pdf)|*.pdf|All files (*.*)|*.*", FilterIndex = 2 };
@@ -44,9 +44,9 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 	public ObservableCollection<string> PageCurrentSearchFiles { get; } = [];
 	public ObservableCollection<IPDFFindPosition> NavigationCurrentFindResults { get; } = [];
 	public IPDFComponent PDFComponent { get; } = PDFFactory.PDFComponent;
-	public PDFView PageView { get; } // TODO add PageView DPI scaling
+	public PDFView PageView { get; }
 
-	private CancellationTokenSource cancellationTokenSource = new();
+	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new()];
 
 	private WindowState mainWindowState = WindowState.Normal;
 	private bool sidepanelCollapsed = false;
@@ -415,9 +415,9 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 		ToolbarZoomInCommand = new(ToolbarZoomIn, CanToolbarZoomIn);
 		ToolbarPreviousPageCommand = new(ToolbarPreviousPage, CanToolbarPreviousPage);
 		ToolbarNextPageCommand = new(ToolbarNextPage, CanToolbarNextPage);
-		ToolbarFindCommand = new(ToolbarFind, CanToolbarFindOrThumbnails);
+		ToolbarFindCommand = new(ToolbarFind);
 		ToolbarContentsCommand = new(ToolbarContents, CanToolbarContents);
-		ToolbarThumbnailsCommand = new(ToolbarThumbnails, CanToolbarFindOrThumbnails);
+		ToolbarThumbnailsCommand = new(ToolbarThumbnails);
 		ToolbarDocumentInformationCommand = new(ToolbarDocumentInformation);
 		PopupClosePageViewCommand = new(PopupClosePageView);
 		PopupChangePageViewCommand = new(PopupChangePageView);
@@ -785,7 +785,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 					fileErrors.Add(fileError);
 				}
 			}
-			CancellationToken cancellationToken = NewCancellationToken();
+			CancellationToken cancellationToken = NewCancellationToken(0);
 			try
 			{
 				await Task.Run(async () =>
@@ -847,7 +847,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 			if (HomeCurrentPage == 1 || fileErrors.Count == 0)
 			{
 				await ResetHomeEditPageAsync(false);
-				CancellationToken cancellationToken = NewCancellationToken();
+				CancellationToken cancellationToken = NewCancellationToken(0);
 				(PageLoading, PageEmpty) = (true, false);
 				try
 				{
@@ -934,7 +934,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 		if (saveFileDialog.ShowDialog() == true)
 		{
 			string saveFilePath = saveFileDialog.FileName;
-			CancellationToken cancellationToken = NewCancellationToken();
+			CancellationToken cancellationToken = NewCancellationToken(1);
 			try
 			{
 				switch (HomeCurrentPage)
@@ -1153,7 +1153,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 
 	private async Task SidepanelFileAsync(string parameter)
 	{
-		CancellationToken cancellationToken = NewCancellationToken();
+		CancellationToken cancellationToken = NewCancellationToken(0);
 		try
 		{
 			FileError? fileError = parameter.FileError();
@@ -1293,7 +1293,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 	}
 	private async Task NavigationFindNavigateAsync(IPDFFindPosition parameter)
 	{
-		CancellationToken cancellationToken = NewCancellationToken();
+		CancellationToken cancellationToken = NewCancellationToken(1, false);
 		try
 		{
 			pageComponent.FindComponent.ClearFindSelections();
@@ -1335,7 +1335,6 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 	private bool CanToolbarZoomIn() => pageComponent.ZoomComponent.CurrentZoomPercentage < 800;
 	private bool CanToolbarPreviousPage() => pageComponent.CurrentPageIndex > 1;
 	private bool CanToolbarNextPage() => pageComponent.CurrentPageIndex < pageComponent.PageCount;
-	private bool CanToolbarFindOrThumbnails() => !PageLoading;
 	private bool CanToolbarContents() => PDFComponent.BookmarkComponent.Bookmarks.Count > 0;
 	private bool CanNavigationClearCurrentFindText() => NavigationCurrentFindText != string.Empty;
 
@@ -1400,7 +1399,7 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 	}
 	private async Task RefreshPageAsync()
 	{
-		CancellationToken cancellationToken = NewCancellationToken();
+		CancellationToken cancellationToken = NewCancellationToken(1);
 		switch (PageCurrentPage)
 		{
 			case 1:
@@ -1508,15 +1507,16 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 	}
 	private async Task RefreshFindAsync()
 	{
-		CancellationToken cancellationToken = NewCancellationToken();
+		CancellationToken cancellationToken = NewCancellationToken(1, false);
 		string search = NavigationCurrentFindText.Trim();
-		PageLoading = true;
 		NavigationCurrentFindResults.Clear();
 		if (search != string.Empty)
 		{
+			PageLoading = true;
 			try
 			{
-				await Task.Run(async () =>
+				List<IPDFFindPosition> positions = [];
+				await Task.Run(() =>
 				{
 					pageComponent.FindComponent.FindText(search, NavigationFindMatchCase, NavigationFindMatchWholeWord, pageIndex =>
 					{
@@ -1529,17 +1529,15 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 					}, (page, position) =>
 					{
 						cancellationToken.ThrowIfCancellationRequested();
-						Application.Current.Dispatcher.BeginInvoke(() =>
-						{
-							if (!cancellationToken.IsCancellationRequested)
-							{
-								NavigationCurrentFindResults.Add(position);
-							}
-						}, DispatcherPriority.Background);
+						positions.Add(position);
 						return true;
 					});
 				}, cancellationToken);
 				cancellationToken.ThrowIfCancellationRequested();
+				foreach (IPDFFindPosition position in positions)
+				{
+					NavigationCurrentFindResults.Add(position);
+				}
 				PageLoading = false;
 			}
 			catch (OperationCanceledException) { }
@@ -1578,12 +1576,18 @@ internal class MainWindowViewModel : ObservableObject // TODO add application ic
 		};
 	}
 	private PdfDocument OpenCurrentDocument(int index = 0) => PdfReader.Open(HomeCurrentPage == 1 ? EditCurrentFiles[index].FilePath : EditCurrentFile!, PdfDocumentOpenMode.Import);
-	private CancellationToken NewCancellationToken()
+	private CancellationToken NewCancellationToken(int cancellationTokenSourceIndex, bool cancelAll = true)
 	{
-		cancellationTokenSource.Cancel();
-		cancellationTokenSource.Dispose();
-		cancellationTokenSource = new();
-		return cancellationTokenSource.Token;
+		for (int index = 0; index < cancellationTokenSources.Length; index++)
+		{
+			if (cancelAll || index == cancellationTokenSourceIndex)
+			{
+				cancellationTokenSources[index].Cancel();
+				cancellationTokenSources[index].Dispose();
+				cancellationTokenSources[index] = new();
+			}
+		}
+		return cancellationTokenSources[cancellationTokenSourceIndex].Token;
 	}
 	private ObservableCollection<string> HomePDFList(string parameter) => parameter.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? HomeFileList : HomeFolderList;
 }

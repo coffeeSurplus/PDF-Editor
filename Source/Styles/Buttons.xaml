@@ -303,66 +303,49 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-	<Style TargetType="RepeatButton" x:Key="DefaultRepeatButton">
+	<Style TargetType="RepeatButton">
 		<Setter Property="Background" Value="{StaticResource ResourceKey=Transparent}"/>
 		<Setter Property="Focusable" Value="False"/>
 		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Transparent}"/>
-	</Style>
-	<Style TargetType="RepeatButton" x:Key="ScrollViewerLineDownRepeatButton" BasedOn="{StaticResource ResourceKey=DefaultRepeatButton}">
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="RepeatButton">
 					<Border Background="{TemplateBinding Property=Background}">
-						<Label Style="{StaticResource ResourceKey=LineDownIcon}" Foreground="{TemplateBinding Property=Foreground}"/>
+						<ContentPresenter/>
 					</Border>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-	<Style TargetType="RepeatButton" x:Key="ScrollViewerLineUpRepeatButton" BasedOn="{StaticResource ResourceKey=DefaultRepeatButton}">
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="RepeatButton">
-					<Border Background="{TemplateBinding Property=Background}">
-						<Label Style="{StaticResource ResourceKey=LineUpIcon}" Foreground="{TemplateBinding Property=Foreground}"/>
-					</Border>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-	<Style TargetType="RepeatButton" x:Key="ScrollViewerTrackRepeatButton" BasedOn="{StaticResource ResourceKey=DefaultRepeatButton}">
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="RepeatButton">
-					<Border Background="{TemplateBinding Property=Background}"/>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
 	</Style>
 	<Style TargetType="ScrollBar">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Transparent}"/>
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="ScrollBar">
-					<Border Style="{StaticResource ResourceKey=ScrollBarBorder}">
+					<Border Style="{StaticResource ResourceKey=ScrollBarVerticalBorder}">
 						<Grid>
 							<Grid.RowDefinitions>
-								<RowDefinition Height="15"/>
+								<RowDefinition Height="16"/>
 								<RowDefinition Height="1*"/>
-								<RowDefinition Height="15"/>
+								<RowDefinition Height="16"/>
 							</Grid.RowDefinitions>
-							<RepeatButton Name="LineUpRepeatButton" Grid.Row="0" Style="{StaticResource ResourceKey=ScrollViewerLineUpRepeatButton}" Command="{x:Static Member=ScrollBar.LineUpCommand}" Visibility="Visible"/>
+							<RepeatButton Name="LineUpRepeatButton" Grid.Row="0" Command="{x:Static Member=ScrollBar.LineUpCommand}">
+								<Label Style="{StaticResource ResourceKey=LineUpIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"/>
+							</RepeatButton>
 							<Track Name="PART_Track" Grid.Row="1">
 								<Track.DecreaseRepeatButton>
-									<RepeatButton Style="{StaticResource ResourceKey=ScrollViewerTrackRepeatButton}" Command="{x:Static Member=ScrollBar.PageUpCommand}"/>
+									<RepeatButton Command="{x:Static Member=ScrollBar.PageUpCommand}"/>
 								</Track.DecreaseRepeatButton>
 								<Track.Thumb>
 									<Thumb/>
 								</Track.Thumb>
 								<Track.IncreaseRepeatButton>
-									<RepeatButton Style="{StaticResource ResourceKey=ScrollViewerTrackRepeatButton}" Command="{x:Static Member=ScrollBar.PageDownCommand}"/>
+									<RepeatButton Command="{x:Static Member=ScrollBar.PageDownCommand}"/>
 								</Track.IncreaseRepeatButton>
 							</Track>
-							<RepeatButton Name="LineDownRepeatButton" Grid.Row="2" Style="{StaticResource ResourceKey=ScrollViewerLineDownRepeatButton}" Command="{x:Static Member=ScrollBar.LineDownCommand}" Visibility="Visible"/>
+							<RepeatButton Name="LineDownRepeatButton" Grid.Row="2" Command="{x:Static Member=ScrollBar.LineDownCommand}">
+								<Label Style="{StaticResource ResourceKey=LineDownIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"/>
+							</RepeatButton>
 						</Grid>
 					</Border>
 					<ControlTemplate.Triggers>
@@ -380,6 +363,54 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
+		<Style.Triggers>
+			<Trigger Property="Orientation" Value="Horizontal">
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate>
+							<Border Style="{StaticResource ResourceKey=ScrollBarHorizontalBorder}">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="16"/>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="16"/>
+									</Grid.ColumnDefinitions>
+									<RepeatButton Name="LineLeftRepeatButton" Grid.Column="0" Command="{x:Static Member=ScrollBar.LineLeftCommand}">
+										<Label Style="{StaticResource ResourceKey=LineLeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"/>
+									</RepeatButton>
+									<Track Name="PART_Track" Grid.Column="1" Style="{StaticResource ResourceKey=HorizontalTrack}">
+										<Track.DecreaseRepeatButton>
+											<RepeatButton Command="{x:Static Member=ScrollBar.PageLeftCommand}"/>
+										</Track.DecreaseRepeatButton>
+										<Track.Thumb>
+											<Thumb/>
+										</Track.Thumb>
+										<Track.IncreaseRepeatButton>
+											<RepeatButton Command="{x:Static Member=ScrollBar.PageRightCommand}"/>
+										</Track.IncreaseRepeatButton>
+									</Track>
+									<RepeatButton Name="LineRightRepeatButton" Grid.Column="2" Command="{x:Static Member=ScrollBar.LineRightCommand}">
+										<Label Style="{StaticResource ResourceKey=LineRightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=RepeatButton}}"/>
+									</RepeatButton>
+								</Grid>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="LineLeftRepeatButton" Property="Foreground" Value="{StaticResource ResourceKey=LightGrey}"/>
+									<Setter TargetName="LineRightRepeatButton" Property="Foreground" Value="{StaticResource ResourceKey=LightGrey}"/>
+								</Trigger>
+								<Trigger SourceName="LineLeftRepeatButton" Property="IsMouseOver" Value="True">
+									<Setter TargetName="LineLeftRepeatButton" Property="Foreground" Value="{StaticResource ResourceKey=DarkGrey}"/>
+								</Trigger>
+								<Trigger SourceName="LineRightRepeatButton" Property="IsMouseOver" Value="True">
+									<Setter TargetName="LineRightRepeatButton" Property="Foreground" Value="{StaticResource ResourceKey=DarkGrey}"/>
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Trigger>
+		</Style.Triggers>
 	</Style>
 	<Style TargetType="Thumb">
 		<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>

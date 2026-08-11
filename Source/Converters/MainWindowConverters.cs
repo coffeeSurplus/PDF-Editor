@@ -28,12 +28,12 @@ internal class MainWindowDPIScaleConverter : IMultiValueConverter
 {
 	public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 	{
-		if (Application.Current.MainWindow is Window mainWindow && values[0] is double size && values[1] is int DPI)
+		if (Application.Current.MainWindow is Window mainWindow && values[0] is double size && values[1] is Visibility scrollBarVisibility)
 		{
 			return (string)parameter switch
 			{
-				"X" => size * VisualTreeHelper.GetDpi(mainWindow).DpiScaleX * DPI / 96,
-				"Y" => size * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY * DPI / 96,
+				"X" => (size - (scrollBarVisibility == Visibility.Visible ? 16 : 0)) * VisualTreeHelper.GetDpi(mainWindow).DpiScaleX,
+				"Y" => (size - (scrollBarVisibility == Visibility.Visible ? 16 : 0)) * VisualTreeHelper.GetDpi(mainWindow).DpiScaleY,
 				_ => Binding.DoNothing
 			};
 		}
@@ -49,14 +49,10 @@ internal class MainWindowDPIScaleBackConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		if (Application.Current.MainWindow is Window mainWindow && value is int DPI)
+		if (Application.Current.MainWindow is Window mainWindow)
 		{
-			return (string)parameter switch
-			{
-				"X" => 1d / (VisualTreeHelper.GetDpi(mainWindow).DpiScaleX * DPI / 96),
-				"Y" => 1d / (VisualTreeHelper.GetDpi(mainWindow).DpiScaleY * DPI / 96),
-				_ => Binding.DoNothing
-			};
+			DpiScale dpiScale = VisualTreeHelper.GetDpi(mainWindow);
+			return new ScaleTransform(1 / dpiScale.DpiScaleX, 1 / dpiScale.DpiScaleY);
 		}
 		else
 		{
