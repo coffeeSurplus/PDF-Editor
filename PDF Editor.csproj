@@ -8,21 +8,24 @@
 		<ApplicationIcon>Source/Resources/Icon.ico</ApplicationIcon>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<DebugType>none</DebugType>
+		<DebugSymbols>false</DebugSymbols>
 		<PublishSingleFile>true</PublishSingleFile>
+		<PublishReferencesSymbols>false</PublishReferencesSymbols>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DebugType>none</DebugType>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DebugType>none</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
 		<ApplicationDefinition Include="Source\Styles\App.xaml" />
-		<Content Include="pdfium.dll" CopyToOutputDirectory="Always" />
+		<Content Include="pdfium.dll" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
 		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
 		<PackageReference Include="PDFiumDotNET.WpfControls" Version="1.0.4" />
 		<PackageReference Include="PDFsharp" Version="6.2.4" />
 		<PackageReference Include="PDFtoImage" Version="5.3.0" />
 	</ItemGroup>
+	<Target Name="RemovePdbFilesFromPublish" AfterTargets="Publish">
+		<ItemGroup>
+			<PdbFiles Include="$(PublishDir)**\*.pdb" />
+		</ItemGroup>
+		<Delete Files="@(PdbFiles)" />
+	</Target>
 </Project>
