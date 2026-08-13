@@ -29,6 +29,7 @@ namespace PDF_Editor.Source.ViewModels;
 
 internal class MainWindowViewModel : ObservableObject
 {
+	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new(), new()];
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
 	private readonly SaveFileDialog saveFileDialog = new() { DefaultExt = ".pdf", Filter = "PDF File (*.pdf)|*.pdf|All files (*.*)|*.*", FilterIndex = 2 };
 	private readonly IPDFPageComponent pageComponent;
@@ -45,8 +46,6 @@ internal class MainWindowViewModel : ObservableObject
 	public ObservableCollection<IPDFFindPosition> NavigationCurrentFindResults { get; } = [];
 	public IPDFComponent PDFComponent { get; } = PDFFactory.PDFComponent;
 	public PDFView PageView { get; }
-
-	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new()];
 
 	private WindowState mainWindowState = WindowState.Normal;
 	private bool sidepanelCollapsed = false;
@@ -230,7 +229,7 @@ internal class MainWindowViewModel : ObservableObject
 		get => toolbarPageViewOpen;
 		set => SetValue(ref toolbarPageViewOpen, value);
 	}
-	public bool ToolbarFitToHeight
+	public bool ToolbarFitToHeightButtonVisible
 	{
 		get => toolbarFitToHeight;
 		set => SetValue(ref toolbarFitToHeight, value);
@@ -331,7 +330,8 @@ internal class MainWindowViewModel : ObservableObject
 	public RelayCommand EditRotateSelectedRightCommand { get; }
 	public RelayCommand PageClearCurrentSearchTextCommand { get; }
 	public RelayCommand ToolbarPageViewCommand { get; }
-	public RelayCommand ToolbarFitCommand { get; }
+	public RelayCommand ToolbarFitToHeightCommand { get; }
+	public RelayCommand ToolbarFitToWidthCommand { get; }
 	public RelayCommand ToolbarResetZoomCommand { get; }
 	public RelayCommand ToolbarZoomOutCommand { get; }
 	public RelayCommand ToolbarZoomInCommand { get; }
@@ -409,7 +409,8 @@ internal class MainWindowViewModel : ObservableObject
 		EditRotateSelectedRightCommand = new(EditRotateSelectedRight, CanEditClearSelectionOrRotateSelected);
 		PageClearCurrentSearchTextCommand = new(PageClearCurrentSearchText, CanPageClearCurrentSearchText);
 		ToolbarPageViewCommand = new(ToolbarPageView, CanToolbarPageView);
-		ToolbarFitCommand = new(ToolbarFit);
+		ToolbarFitToHeightCommand = new(ToolbarFitToHeight);
+		ToolbarFitToWidthCommand = new(ToolbarFitToWidth);
 		ToolbarResetZoomCommand = new(ToolbarResetZoom, CanToolbarResetZoom);
 		ToolbarZoomOutCommand = new(ToolbarZoomOut, CanToolbarZoomOut);
 		ToolbarZoomInCommand = new(ToolbarZoomIn, CanToolbarZoomIn);
@@ -491,6 +492,7 @@ internal class MainWindowViewModel : ObservableObject
 	{
 		if (e.PropertyName == "CurrentPageIndex")
 		{
+			CommandManager.InvalidateRequerySuggested();
 			int currentPage = pageComponent.CurrentPageIndex;
 			ToolbarCurrentPageText = currentPage.ToString();
 			for (int index = 0; index < EditCurrentPages.Count; index++)
@@ -646,25 +648,93 @@ internal class MainWindowViewModel : ObservableObject
 		}
 	}
 	private void PageClearCurrentSearchText() => PageCurrentSearchText = string.Empty;
-	private void ToolbarPageView() => (ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen) = (true, false, false, false);
-	private void ToolbarFit()
+	private void ToolbarPageView()
 	{
-		pageComponent.ZoomComponent.CurrentZoomFactor = ToolbarFitToHeight ? PageView.ActualHeight / pageComponent.RenderManager.HighestPageRow : PageView.ActualWidth / pageComponent.RenderManager.WidestPageRow;
-		if (ToolbarFitToHeight)
+		if (PageCurrentPage == 0)
 		{
-			pageComponent.NavigateToPage(pageComponent.CurrentPageIndex);
+			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (true, false, false, false, false, string.Empty);
 		}
-		ToolbarFitToHeight ^= true;
 	}
-	private void ToolbarResetZoom() => pageComponent.ZoomComponent.CurrentZoomPercentage = 100;
-	private void ToolbarZoomOut() => pageComponent.ZoomComponent.DecreaseZoom();
-	private void ToolbarZoomIn() => pageComponent.ZoomComponent.IncreaseZoom();
-	private void ToolbarPreviousPage() => pageComponent.NavigateToPage(pageComponent.CurrentPageIndex - 1);
-	private void ToolbarNextPage() => pageComponent.NavigateToPage(pageComponent.CurrentPageIndex + 1);
-	private void ToolbarFind() => (ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, NavigationCurrentFindText) = (!ToolbarFindOpen, false, false, string.Empty);
-	private void ToolbarContents() => (ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen) = (false, !ToolbarContentsOpen, false);
-	private void ToolbarThumbnails() => (ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen) = (false, false, !ToolbarThumbnailsOpen);
-	private void ToolbarDocumentInformation() => (ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen) = (false, false, false, true);
+	private void ToolbarFitToHeight()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.ZoomComponent.CurrentZoomFactor = PageView.ActualHeight / pageComponent.RenderManager.HighestPageRow;
+			pageComponent.NavigateToPage(pageComponent.CurrentPageIndex);
+			ToolbarFitToHeightButtonVisible = false;
+		}
+	}
+	private void ToolbarFitToWidth()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.ZoomComponent.CurrentZoomFactor = PageView.ActualWidth / pageComponent.RenderManager.WidestPageRow;
+			ToolbarFitToHeightButtonVisible = true;
+		}
+	}
+	private void ToolbarResetZoom()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.ZoomComponent.CurrentZoomPercentage = 100;
+		}
+	}
+	private void ToolbarZoomOut()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.ZoomComponent.DecreaseZoom();
+		}
+	}
+	private void ToolbarZoomIn()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.ZoomComponent.IncreaseZoom();
+		}
+	}
+	private void ToolbarPreviousPage()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.NavigateToPage(pageComponent.CurrentPageIndex - 1);
+		}
+	}
+	private void ToolbarNextPage()
+	{
+		if (PageCurrentPage == 0)
+		{
+			pageComponent.NavigateToPage(pageComponent.CurrentPageIndex + 1);
+		}
+	}
+	private void ToolbarFind()
+	{
+		if (PageCurrentPage == 0)
+		{
+			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (false, !ToolbarFindOpen, false, false, false, string.Empty);
+		}
+	}
+	private void ToolbarContents()
+	{
+		if (PageCurrentPage == 0)
+		{
+			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (false, false, !ToolbarContentsOpen, false, false, string.Empty);
+		}
+	}
+	private void ToolbarThumbnails()
+	{
+		if (PageCurrentPage == 0)
+		{
+			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (false, false, false, !ToolbarThumbnailsOpen, false, string.Empty);
+		}
+	}
+	private void ToolbarDocumentInformation()
+	{
+		if (PageCurrentPage == 0)
+		{
+			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (false, false, false, false, true, string.Empty);
+		}
+	}
 	private void PopupClosePageView() => ToolbarPageViewOpen = false;
 	private void PopupChangePageView()
 	{
@@ -785,7 +855,7 @@ internal class MainWindowViewModel : ObservableObject
 					fileErrors.Add(fileError);
 				}
 			}
-			CancellationToken cancellationToken = NewCancellationToken(0);
+			CancellationToken cancellationToken = NewCancellationToken(1, [0, 1, 2]);
 			try
 			{
 				await Task.Run(async () =>
@@ -804,13 +874,14 @@ internal class MainWindowViewModel : ObservableObject
 								}
 								if (openFile)
 								{
-									await SidepanelFileAsync(file);
 									openFile = false;
+									await SidepanelFileAsync(file);
 								}
 							}
 						}, DispatcherPriority.Background);
 					}
 				});
+
 			}
 			catch (OperationCanceledException) { }
 			foreach (FileError fileError in fileErrors)
@@ -821,34 +892,129 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task EditBrowseAsync()
 	{
-		InitialiseOpenFileDialog(HomeCurrentPage == 1);
-		if (openFileDialog.ShowDialog() == true)
+		if (PageCurrentPage == 1 && HomeCurrentPage != 0)
 		{
-			List<FileError> fileErrors = [];
-			if (HomeCurrentPage == 1)
+			InitialiseOpenFileDialog(HomeCurrentPage == 1);
+			if (openFileDialog.ShowDialog() == true)
 			{
-				foreach (string file in openFileDialog.FileNames)
+				List<FileError> fileErrors = [];
+				if (HomeCurrentPage == 1)
 				{
-					FileError? fileError = file.FileError();
+					foreach (string file in openFileDialog.FileNames)
+					{
+						FileError? fileError = file.FileError();
+						if (fileError != null)
+						{
+							fileErrors.Add(fileError);
+						}
+					}
+				}
+				else
+				{
+					FileError? fileError = openFileDialog.FileName.FileError();
 					if (fileError != null)
 					{
 						fileErrors.Add(fileError);
 					}
 				}
-			}
-			else
-			{
-				FileError? fileError = openFileDialog.FileName.FileError();
-				if (fileError != null)
+				if (HomeCurrentPage == 1 || fileErrors.Count == 0)
 				{
-					fileErrors.Add(fileError);
+					await ResetHomeEditPageAsync(false);
+					CancellationToken cancellationToken = NewCancellationToken(2, [0, 1, 2]);
+					(PageLoading, PageEmpty) = (true, false);
+					try
+					{
+						switch (HomeCurrentPage)
+						{
+							case 1:
+								await Task.Run(async () =>
+								{
+									int displayIndex = EditCurrentFiles.Count + 1;
+									foreach (string file in openFileDialog.FileNames.Where(x => x.FileError() == null))
+									{
+										if (!EditCurrentFiles.Select(x => x.FilePath).Contains(file))
+										{
+											cancellationToken.ThrowIfCancellationRequested();
+											await Application.Current.Dispatcher.BeginInvoke(() =>
+											{
+												if (!cancellationToken.IsCancellationRequested)
+												{
+													EditCurrentFiles.Add(new(file, displayIndex, file.FilePageCount()));
+													displayIndex++;
+													CommandManager.InvalidateRequerySuggested();
+												}
+											}, DispatcherPriority.Background);
+										}
+									}
+								}, cancellationToken);
+								break;
+							case >= 2 and <= 6:
+								EditCurrentFile = openFileDialog.FileName;
+								EditCurrentPages.Clear();
+								await Task.Run(async () =>
+								{
+									byte[] file = await File.ReadAllBytesAsync(EditCurrentFile);
+									cancellationToken.ThrowIfCancellationRequested();
+									int displayIndex = 1;
+									await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
+									{
+										cancellationToken.ThrowIfCancellationRequested();
+										BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+										thumbnail.Freeze();
+										await Application.Current.Dispatcher.BeginInvoke(() =>
+										{
+											if (!cancellationToken.IsCancellationRequested)
+											{
+												EditCurrentPages.Add(new(thumbnail, displayIndex));
+												displayIndex++;
+												CommandManager.InvalidateRequerySuggested();
+											}
+										}, DispatcherPriority.Background);
+									}
+								});
+								break;
+							case 7:
+								EditCurrentFile = openFileDialog.FileName;
+								await Task.Run(() =>
+								{
+									cancellationToken.ThrowIfCancellationRequested();
+									using PdfDocument currentDocument = PdfReader.Open(EditCurrentFile, PdfDocumentOpenMode.Import);
+									PdfDocumentInformation information = currentDocument.Info;
+									(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
+									currentDocument.Close();
+								}, cancellationToken);
+								break;
+							default:
+								return;
+						}
+						cancellationToken.ThrowIfCancellationRequested();
+						await RefreshPageAsync();
+						PageLoading = false;
+						CommandManager.InvalidateRequerySuggested();
+					}
+					catch (OperationCanceledException) { }
+				}
+				foreach (FileError fileError in fileErrors)
+				{
+					MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", "PDF Editor - File error");
 				}
 			}
-			if (HomeCurrentPage == 1 || fileErrors.Count == 0)
+		}
+		else
+		{
+			await SidepanelBrowseAsync();
+		}
+	}
+	private async Task EditClearAsync() => await ResetHomeEditPageAsync();
+	private async Task EditSaveAsAsync()
+	{
+		if (PageCurrentPage == 1 && HomeCurrentPage != 0 && CanEditSaveAsAsync())
+		{
+			InitialiseSaveFileDialog();
+			if (saveFileDialog.ShowDialog() == true)
 			{
-				await ResetHomeEditPageAsync(false);
-				CancellationToken cancellationToken = NewCancellationToken(0);
-				(PageLoading, PageEmpty) = (true, false);
+				string saveFilePath = saveFileDialog.FileName;
+				CancellationToken cancellationToken = NewCancellationToken(2, [0, 1, 2]);
 				try
 				{
 					switch (HomeCurrentPage)
@@ -856,165 +1022,54 @@ internal class MainWindowViewModel : ObservableObject
 						case 1:
 							await Task.Run(async () =>
 							{
-								int displayIndex = EditCurrentFiles.Count + 1;
-								foreach (string file in openFileDialog.FileNames.Where(x => x.FileError() == null))
+								using PdfDocument outputDocument = new();
+								foreach (EditFileModel file in EditCurrentFiles)
 								{
-									if (!EditCurrentFiles.Select(x => x.FilePath).Contains(file))
+									cancellationToken.ThrowIfCancellationRequested();
+									using PdfDocument currentDocument = OpenCurrentDocument(file.DisplayIndex - 1);
+									foreach (PdfPage page in currentDocument.Pages)
 									{
 										cancellationToken.ThrowIfCancellationRequested();
-										await Application.Current.Dispatcher.BeginInvoke(() =>
-										{
-											if (!cancellationToken.IsCancellationRequested)
-											{
-												EditCurrentFiles.Add(new(file, displayIndex, file.FilePageCount()));
-												displayIndex++;
-												CommandManager.InvalidateRequerySuggested();
-											}
-										}, DispatcherPriority.Background);
+										outputDocument.AddPage(page);
 									}
+									cancellationToken.ThrowIfCancellationRequested();
+									currentDocument.Close();
 								}
+								cancellationToken.ThrowIfCancellationRequested();
+								outputDocument.Save(saveFilePath);
+								outputDocument.Close();
+								await Application.Current.Dispatcher.BeginInvoke(async () =>
+								{
+									if (!cancellationToken.IsCancellationRequested)
+									{
+										await PageOpenFileAsync(saveFilePath);
+									}
+								}, DispatcherPriority.Background);
 							}, cancellationToken);
 							break;
-						case >= 2 and <= 6:
-							EditCurrentFile = openFileDialog.FileName;
-							EditCurrentPages.Clear();
+						case 2:
 							await Task.Run(async () =>
 							{
-								byte[] file = await File.ReadAllBytesAsync(EditCurrentFile);
-								cancellationToken.ThrowIfCancellationRequested();
-								int displayIndex = 1;
-								await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
+								int pageCount = EditCurrentPages.Count;
+								List<int> splitPositions = EditSplitMode switch
 								{
-									cancellationToken.ThrowIfCancellationRequested();
-									BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
-									thumbnail.Freeze();
-									await Application.Current.Dispatcher.BeginInvoke(() =>
-									{
-										if (!cancellationToken.IsCancellationRequested)
-										{
-											EditCurrentPages.Add(new(thumbnail, displayIndex));
-											displayIndex++;
-											CommandManager.InvalidateRequerySuggested();
-										}
-									}, DispatcherPriority.Background);
-								}
-							});
-							break;
-						case 7:
-							EditCurrentFile = openFileDialog.FileName;
-							await Task.Run(() =>
-							{
-								cancellationToken.ThrowIfCancellationRequested();
-								using PdfDocument currentDocument = PdfReader.Open(EditCurrentFile, PdfDocumentOpenMode.Import);
-								PdfDocumentInformation information = currentDocument.Info;
-								(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
-								currentDocument.Close();
-							}, cancellationToken);
-							break;
-						default:
-							return;
-					}
-					cancellationToken.ThrowIfCancellationRequested();
-					await RefreshPageAsync();
-					PageLoading = false;
-					CommandManager.InvalidateRequerySuggested();
-				}
-				catch (OperationCanceledException) { }
-			}
-			foreach (FileError fileError in fileErrors)
-			{
-				MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", "PDF Editor - File error");
-			}
-		}
-	}
-	private async Task EditClearAsync() => await ResetHomeEditPageAsync();
-	private async Task EditSaveAsAsync()
-	{
-		InitialiseSaveFileDialog();
-		if (saveFileDialog.ShowDialog() == true)
-		{
-			string saveFilePath = saveFileDialog.FileName;
-			CancellationToken cancellationToken = NewCancellationToken(1);
-			try
-			{
-				switch (HomeCurrentPage)
-				{
-					case 1:
-						await Task.Run(async () =>
-						{
-							using PdfDocument outputDocument = new();
-							foreach (EditFileModel file in EditCurrentFiles)
-							{
-								cancellationToken.ThrowIfCancellationRequested();
-								using PdfDocument currentDocument = OpenCurrentDocument(file.DisplayIndex - 1);
-								foreach (PdfPage page in currentDocument.Pages)
-								{
-									cancellationToken.ThrowIfCancellationRequested();
-									outputDocument.AddPage(page);
-								}
-								cancellationToken.ThrowIfCancellationRequested();
-								currentDocument.Close();
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							outputDocument.Save(saveFilePath);
-							outputDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
-								{
-									await PageOpenFileAsync(saveFilePath);
-								}
-							}, DispatcherPriority.Background);
-						}, cancellationToken);
-						break;
-					case 2:
-						await Task.Run(async () =>
-						{
-							int pageCount = EditCurrentPages.Count;
-							List<int> splitPositions = EditSplitMode switch
-							{
-								1 => [.. Enumerable.Range(1, pageCount - 1).Prepend(0).Append(pageCount)],
-								2 => [.. Enumerable.Range(1, pageCount - 1).Where(x => x % int.Parse(EditSplitEveryNPagesText) == 0).Prepend(0).Append(pageCount)],
-								3 => [.. EditSplitAfterPagesText.Split(',').Select(int.Parse).Prepend(0).Append(pageCount)],
-								_ => []
-							};
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							for (int splitIndex = 0; splitIndex < splitPositions.Count - 1; splitIndex++)
-							{
-								cancellationToken.ThrowIfCancellationRequested();
-								using PdfDocument outputDocument = new();
-								for (int pageIndex = splitPositions[splitIndex]; pageIndex < splitPositions[splitIndex + 1]; pageIndex++)
-								{
-									cancellationToken.ThrowIfCancellationRequested();
-									outputDocument.AddPage(currentDocument.Pages[pageIndex]);
-								}
-								cancellationToken.ThrowIfCancellationRequested();
-								outputDocument.Save(saveFilePath.InsertToFilePath($" {splitIndex + 1}"));
-								outputDocument.Close();
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							currentDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
-								{
-									await PageOpenFolderAsync(Path.GetDirectoryName(saveFilePath)!);
-								}
-							}, DispatcherPriority.Background);
-						}, cancellationToken);
-						break;
-					case 3:
-						await Task.Run(async () =>
-						{
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							if (EditSaveAsIndividualFiles)
-							{
-								foreach (EditPageModel page in EditCurrentPages.Where(x => x.IsSelected))
+									1 => [.. Enumerable.Range(1, pageCount - 1).Prepend(0).Append(pageCount)],
+									2 => [.. Enumerable.Range(1, pageCount - 1).Where(x => x % int.Parse(EditSplitEveryNPagesText) == 0).Prepend(0).Append(pageCount)],
+									3 => [.. EditSplitAfterPagesText.Split(',').Select(int.Parse).Prepend(0).Append(pageCount)],
+									_ => []
+								};
+								using PdfDocument currentDocument = OpenCurrentDocument();
+								for (int splitIndex = 0; splitIndex < splitPositions.Count - 1; splitIndex++)
 								{
 									cancellationToken.ThrowIfCancellationRequested();
 									using PdfDocument outputDocument = new();
-									outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
-									outputDocument.Save(saveFilePath.InsertToFilePath($" - page {page.DisplayIndex}"));
+									for (int pageIndex = splitPositions[splitIndex]; pageIndex < splitPositions[splitIndex + 1]; pageIndex++)
+									{
+										cancellationToken.ThrowIfCancellationRequested();
+										outputDocument.AddPage(currentDocument.Pages[pageIndex]);
+									}
+									cancellationToken.ThrowIfCancellationRequested();
+									outputDocument.Save(saveFilePath.InsertToFilePath($" {splitIndex + 1}"));
 									outputDocument.Close();
 								}
 								cancellationToken.ThrowIfCancellationRequested();
@@ -1026,11 +1081,60 @@ internal class MainWindowViewModel : ObservableObject
 										await PageOpenFolderAsync(Path.GetDirectoryName(saveFilePath)!);
 									}
 								}, DispatcherPriority.Background);
-							}
-							else
+							}, cancellationToken);
+							break;
+						case 3:
+							await Task.Run(async () =>
 							{
+								using PdfDocument currentDocument = OpenCurrentDocument();
+								if (EditSaveAsIndividualFiles)
+								{
+									foreach (EditPageModel page in EditCurrentPages.Where(x => x.IsSelected))
+									{
+										cancellationToken.ThrowIfCancellationRequested();
+										using PdfDocument outputDocument = new();
+										outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
+										outputDocument.Save(saveFilePath.InsertToFilePath($" - page {page.DisplayIndex}"));
+										outputDocument.Close();
+									}
+									cancellationToken.ThrowIfCancellationRequested();
+									currentDocument.Close();
+									await Application.Current.Dispatcher.BeginInvoke(async () =>
+									{
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											await PageOpenFolderAsync(Path.GetDirectoryName(saveFilePath)!);
+										}
+									}, DispatcherPriority.Background);
+								}
+								else
+								{
+									using PdfDocument outputDocument = new();
+									foreach (EditPageModel page in EditCurrentPages.Where(x => x.IsSelected))
+									{
+										cancellationToken.ThrowIfCancellationRequested();
+										outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
+									}
+									cancellationToken.ThrowIfCancellationRequested();
+									currentDocument.Close();
+									outputDocument.Save(saveFilePath);
+									outputDocument.Close();
+									await Application.Current.Dispatcher.BeginInvoke(async () =>
+									{
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											await PageOpenFileAsync(saveFilePath);
+										}
+									}, DispatcherPriority.Background);
+								}
+							}, cancellationToken);
+							break;
+						case 4:
+							await Task.Run(async () =>
+							{
+								using PdfDocument currentDocument = OpenCurrentDocument();
 								using PdfDocument outputDocument = new();
-								foreach (EditPageModel page in EditCurrentPages.Where(x => x.IsSelected))
+								foreach (EditPageModel page in EditCurrentPages.Where(x => !x.IsSelected))
 								{
 									cancellationToken.ThrowIfCancellationRequested();
 									outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
@@ -1046,114 +1150,91 @@ internal class MainWindowViewModel : ObservableObject
 										await PageOpenFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
-							}
-						}, cancellationToken);
-						break;
-					case 4:
-						await Task.Run(async () =>
-						{
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							using PdfDocument outputDocument = new();
-							foreach (EditPageModel page in EditCurrentPages.Where(x => !x.IsSelected))
+							}, cancellationToken);
+							break;
+						case 5:
+							await Task.Run(async () =>
 							{
-								cancellationToken.ThrowIfCancellationRequested();
-								outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							currentDocument.Close();
-							outputDocument.Save(saveFilePath);
-							outputDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
+								using PdfDocument currentDocument = OpenCurrentDocument();
+								using PdfDocument outputDocument = new();
+								foreach (EditPageModel page in EditCurrentPages)
 								{
-									await PageOpenFileAsync(saveFilePath);
+									cancellationToken.ThrowIfCancellationRequested();
+									outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
 								}
-							}, DispatcherPriority.Background);
-						}, cancellationToken);
-						break;
-					case 5:
-						await Task.Run(async () =>
-						{
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							using PdfDocument outputDocument = new();
-							foreach (EditPageModel page in EditCurrentPages)
-							{
 								cancellationToken.ThrowIfCancellationRequested();
-								outputDocument.AddPage(currentDocument.Pages[page.DisplayIndex - 1]);
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							currentDocument.Close();
-							outputDocument.Save(saveFilePath);
-							outputDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
+								currentDocument.Close();
+								outputDocument.Save(saveFilePath);
+								outputDocument.Close();
+								await Application.Current.Dispatcher.BeginInvoke(async () =>
 								{
-									await PageOpenFileAsync(saveFilePath);
-								}
-							}, DispatcherPriority.Background);
-						});
-						break;
-					case 6:
-						await Task.Run(async () =>
-						{
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							using PdfDocument outputDocument = new();
-							for (int index = 0; index < EditCurrentPages.Count; index++)
+									if (!cancellationToken.IsCancellationRequested)
+									{
+										await PageOpenFileAsync(saveFilePath);
+									}
+								}, DispatcherPriority.Background);
+							});
+							break;
+						case 6:
+							await Task.Run(async () =>
 							{
+								using PdfDocument currentDocument = OpenCurrentDocument();
+								using PdfDocument outputDocument = new();
+								for (int index = 0; index < EditCurrentPages.Count; index++)
+								{
+									cancellationToken.ThrowIfCancellationRequested();
+									outputDocument.AddPage(currentDocument.Pages[index]).Rotate = EditCurrentPages[index].Rotate;
+								}
 								cancellationToken.ThrowIfCancellationRequested();
-								outputDocument.AddPage(currentDocument.Pages[index]).Rotate = EditCurrentPages[index].Rotate;
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							currentDocument.Close();
-							outputDocument.Save(saveFilePath);
-							outputDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
+								currentDocument.Close();
+								outputDocument.Save(saveFilePath);
+								outputDocument.Close();
+								await Application.Current.Dispatcher.BeginInvoke(async () =>
 								{
-									await PageOpenFileAsync(saveFilePath);
-								}
-							}, DispatcherPriority.Background);
-						}, cancellationToken);
-						break;
-					case 7:
-						await Task.Run(async () =>
-						{
-							using PdfDocument currentDocument = OpenCurrentDocument();
-							using PdfDocument outputDocument = new();
-							foreach (PdfPage page in currentDocument.Pages)
+									if (!cancellationToken.IsCancellationRequested)
+									{
+										await PageOpenFileAsync(saveFilePath);
+									}
+								}, DispatcherPriority.Background);
+							}, cancellationToken);
+							break;
+						case 7:
+							await Task.Run(async () =>
 							{
+								using PdfDocument currentDocument = OpenCurrentDocument();
+								using PdfDocument outputDocument = new();
+								foreach (PdfPage page in currentDocument.Pages)
+								{
+									cancellationToken.ThrowIfCancellationRequested();
+									outputDocument.AddPage(page);
+								}
 								cancellationToken.ThrowIfCancellationRequested();
-								outputDocument.AddPage(page);
-							}
-							cancellationToken.ThrowIfCancellationRequested();
-							currentDocument.Close();
-							outputDocument.Info.SetProperties(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText);
-							outputDocument.Save(saveFilePath);
-							outputDocument.Close();
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
+								currentDocument.Close();
+								outputDocument.Info.SetProperties(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText);
+								outputDocument.Save(saveFilePath);
+								outputDocument.Close();
+								await Application.Current.Dispatcher.BeginInvoke(async () =>
 								{
-									await PageOpenFileAsync(saveFilePath);
-								}
-							}, DispatcherPriority.Background);
-						}, cancellationToken);
-						break;
-					default:
-						return;
+									if (!cancellationToken.IsCancellationRequested)
+									{
+										await PageOpenFileAsync(saveFilePath);
+									}
+								}, DispatcherPriority.Background);
+							}, cancellationToken);
+							break;
+						default:
+							return;
+					}
 				}
+				catch (OperationCanceledException) { }
 			}
-			catch (OperationCanceledException) { }
 		}
 	}
 	private async Task NavigationChangeFindTextOptionsAsync() => await RefreshFindAsync();
 
 	private async Task SidepanelFileAsync(string parameter)
 	{
-		CancellationToken cancellationToken = NewCancellationToken(0);
+		CancellationToken cancellationToken = NewCancellationToken(0, [0, 2]);
 		try
 		{
 			FileError? fileError = parameter.FileError();
@@ -1162,7 +1243,7 @@ internal class MainWindowViewModel : ObservableObject
 				EditCurrentPages.Clear();
 				PDFComponent.CloseDocument();
 				PDFComponent.OpenDocument(parameter);
-				(PageCurrentPage, PageCurrentPDF, PageLoading, ToolbarFitToHeight, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), true, false, false, false, false, false, false, false, false);
+				(PageCurrentPage, PageCurrentPDF, PageLoading, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), true, false, false, false, false, false, false, false, false);
 				PopupChangePageView();
 				await Task.Run(async () =>
 				{
@@ -1293,7 +1374,7 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task NavigationFindNavigateAsync(IPDFFindPosition parameter)
 	{
-		CancellationToken cancellationToken = NewCancellationToken(1, false);
+		CancellationToken cancellationToken = NewCancellationToken(2, [2]);
 		try
 		{
 			pageComponent.FindComponent.ClearFindSelections();
@@ -1399,7 +1480,7 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task RefreshPageAsync()
 	{
-		CancellationToken cancellationToken = NewCancellationToken(1);
+		CancellationToken cancellationToken = NewCancellationToken(2, [0, 1, 2]);
 		switch (PageCurrentPage)
 		{
 			case 1:
@@ -1507,7 +1588,7 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task RefreshFindAsync()
 	{
-		CancellationToken cancellationToken = NewCancellationToken(1, false);
+		CancellationToken cancellationToken = NewCancellationToken(2, [2]);
 		string search = NavigationCurrentFindText.Trim();
 		NavigationCurrentFindResults.Clear();
 		if (search != string.Empty)
@@ -1576,11 +1657,11 @@ internal class MainWindowViewModel : ObservableObject
 		};
 	}
 	private PdfDocument OpenCurrentDocument(int index = 0) => PdfReader.Open(HomeCurrentPage == 1 ? EditCurrentFiles[index].FilePath : EditCurrentFile!, PdfDocumentOpenMode.Import);
-	private CancellationToken NewCancellationToken(int cancellationTokenSourceIndex, bool cancelAll = true)
+	private CancellationToken NewCancellationToken(int cancellationTokenSourceIndex, int[] cancelTokenSourcesList)
 	{
 		for (int index = 0; index < cancellationTokenSources.Length; index++)
 		{
-			if (cancelAll || index == cancellationTokenSourceIndex)
+			if (cancelTokenSourcesList.Contains(index) || index == cancellationTokenSourceIndex)
 			{
 				cancellationTokenSources[index].Cancel();
 				cancellationTokenSources[index].Dispose();

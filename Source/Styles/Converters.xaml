@@ -28,5 +28,4 @@
 	<converter:ToolbarDocumentInformationDocumentAreaConverter x:Key="ToolbarDocumentInformationDocumentArea"/>
 	<converter:ToolbarDocumentInformationTextConverter x:Key="ToolbarDocumentInformationText"/>
 	<converter:ToolbarDocumentInformationTextForegroundConverter x:Key="ToolbarDocumentInformationTextForeground"/>
-	<converter:ToolbarFitToolTipConverter x:Key="ToolbarFitToolTip"/>
 </ResourceDictionary>

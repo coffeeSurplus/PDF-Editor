@@ -51,19 +51,3 @@ internal class ToolbarDocumentInformationTextForegroundConverter : IValueConvert
 	}
 	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
-
-internal class ToolbarFitToolTipConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		if (value is bool fitToWidth)
-		{
-			return fitToWidth ? "Fit to height" : "Fit to width";
-		}
-		else
-		{
-			return Binding.DoNothing;
-		}
-	}
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
-}

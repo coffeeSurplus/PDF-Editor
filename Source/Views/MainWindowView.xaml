@@ -8,6 +8,25 @@
 	<Window.DataContext>
 		<viewModel:MainWindowViewModel/>
 	</Window.DataContext>
+	<Window.InputBindings>
+		<KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding Path=EditBrowseCommandAsync}"/>
+		<KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding Path=EditSaveAsCommandAsync}"/>
+		<KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding Path=ToolbarPageViewCommand}"/>
+		<KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding Path=ToolbarFitToHeightCommand}"/>
+		<KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding Path=ToolbarFitToWidthCommand}"/>
+		<KeyBinding Key="D0" Modifiers="Ctrl" Command="{Binding Path=ToolbarResetZoomCommand}"/>
+		<KeyBinding Key="NumPad0" Modifiers="Ctrl" Command="{Binding Path=ToolbarResetZoomCommand}"/>
+		<KeyBinding Key="OemMinus" Modifiers="Ctrl" Command="{Binding Path=ToolbarZoomOutCommand}"/>
+		<KeyBinding Key="Subtract" Modifiers="Ctrl" Command="{Binding Path=ToolbarZoomOutCommand}"/>
+		<KeyBinding Key="OemPlus" Modifiers="Ctrl+Shift" Command="{Binding Path=ToolbarZoomInCommand}"/>
+		<KeyBinding Key="Add" Modifiers="Ctrl" Command="{Binding Path=ToolbarZoomInCommand}"/>
+		<KeyBinding Key="OemOpenBrackets" Modifiers="Ctrl" Command="{Binding Path=ToolbarPreviousPageCommand}"/>
+		<KeyBinding Key="OemCloseBrackets" Modifiers="Ctrl" Command="{Binding Path=ToolbarNextPageCommand}"/>
+		<KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding Path=ToolbarFindCommand}"/>
+		<KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding Path=ToolbarContentsCommand}"/>
+		<KeyBinding Key="T" Modifiers="Ctrl" Command="{Binding Path=ToolbarThumbnailsCommand}"/>
+		<KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding Path=ToolbarDocumentInformationCommand}"/>
+	</Window.InputBindings>
 	<Window.Title>
 		<MultiBinding Converter="{StaticResource ResourceKey=MainWindowTitle}">
 			<Binding Path="PageCurrentPage"/>
@@ -389,32 +408,34 @@
 							<Grid>
 								<StackPanel Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}">
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPageViewCommand}" ToolTip="Page view">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPageViewCommand}" ToolTip="Page view (Ctrl + E)">
 											<Label Style="{StaticResource ResourceKey=PageViewIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarFitCommand}" ToolTip="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=ToolbarFitToolTip}}">
-											<Grid>
-												<Label Style="{StaticResource ResourceKey=FitToHeightIcon}" Visibility="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}"/>
-												<Label Style="{StaticResource ResourceKey=FitToWidthIcon}" Visibility="{Binding Path=ToolbarFitToHeight, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}"/>
-											</Grid>
-										</Button>
+										<Grid>
+											<Button Style="{StaticResource ResourceKey=ToolbarButton}"  Visibility="{Binding Path=ToolbarFitToHeightButtonVisible, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}" Command="{Binding Path=ToolbarFitToHeightCommand}" ToolTip="Fit to height (Ctrl + H)">
+												<Label Style="{StaticResource ResourceKey=FitToHeightIcon}"/>
+											</Button>
+											<Button Style="{StaticResource ResourceKey=ToolbarButton}"  Visibility="{Binding Path=ToolbarFitToHeightButtonVisible, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}, ConverterParameter=invert}" Command="{Binding Path=ToolbarFitToWidthCommand}" ToolTip="Fit to width (Ctrl + W)">
+												<Label Style="{StaticResource ResourceKey=FitToWidthIcon}"/>
+											</Button>
+										</Grid>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarResetZoomCommand}" ToolTip="Reset zoom">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarResetZoomCommand}" ToolTip="Reset zoom (Ctrl + 0)">
 											<Label Style="{StaticResource ResourceKey=ResetZoomIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 								</StackPanel>
 								<StackPanel Style="{StaticResource ResourceKey=ToolbarCenterStackPanel}">
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomOutCommand}" ToolTip="Zoom out">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomOutCommand}" ToolTip="Zoom out (Ctrl + Minus)">
 											<Label Style="{StaticResource ResourceKey=ZoomOutIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomInCommand}" ToolTip="Zoom in">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarZoomInCommand}" ToolTip="Zoom in (Ctrl + Plus)">
 											<Label Style="{StaticResource ResourceKey=ZoomInIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
@@ -425,34 +446,34 @@
 									<TextBox Style="{StaticResource ResourceKey=ToolbarTextBox}" Text="{Binding Path=ToolbarCurrentPageText, UpdateSourceTrigger=PropertyChanged}"/>
 									<TextBlock Style="{StaticResource ResourceKey=ToolbarTextBlock}" Text="{Binding Path=PageCurrentPDF.PageCount, StringFormat=of {0}}"/>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPreviousPageCommand}" ToolTip="Previous page">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPreviousPageCommand}" ToolTip="Previous page (Ctrl + [)">
 											<Label Style="{StaticResource ResourceKey=LeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarNextPageCommand}" ToolTip="Next page">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarNextPageCommand}" ToolTip="Next page (Ctrl + ])">
 											<Label Style="{StaticResource ResourceKey=RightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 								</StackPanel>
 								<StackPanel Style="{StaticResource ResourceKey=ToolbarRightStackPanel}">
 									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarFindCommand}" ToolTip="Find">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarFindCommand}" ToolTip="Find (Ctrl + F)">
 											<Label Style="{StaticResource ResourceKey=SearchIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarContentsCommand}" ToolTip="Contents">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarContentsCommand}" ToolTip="Contents (Ctrl + B)">
 											<Label Style="{StaticResource ResourceKey=ContentsIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarThumbnailsCommand}" ToolTip="Thumbnails">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarThumbnailsCommand}" ToolTip="Thumbnails (Ctrl + T)">
 											<Label Style="{StaticResource ResourceKey=ThumbnailIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border	Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarDocumentInformationCommand}" ToolTip="Document information">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarDocumentInformationCommand}" ToolTip="Document information (Ctrl + I)">
 											<Label Style="{StaticResource ResourceKey=InfoIcon}"/>
 										</Button>
 									</Border>
