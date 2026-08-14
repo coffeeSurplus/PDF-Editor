@@ -22,6 +22,7 @@
 	<converter:NavigationFindResultCountConverter x:Key="NavigationFindResultCount"/>
 	<converter:NavigationFindResultPageIndexConverter x:Key="NavigationFindResultPageIndex"/>
 	<converter:PageSearchFilePathConverter x:Key="PageSearchFilePath"/>
+	<converter:SidepanelCollapseButtonToolTipConverter x:Key="SidepanelCollapseButtonToolTip"/>
 	<converter:SidepanelFileButtonConverter x:Key="SidepanelFileButton"/>
 	<converter:SidepanelFileNameConverter x:Key="SidepanelFileName"/>
 	<converter:SidepanelWidthConverter x:Key="SidepanelWidth"/>

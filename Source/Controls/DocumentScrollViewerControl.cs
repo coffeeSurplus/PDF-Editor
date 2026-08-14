@@ -4,7 +4,7 @@ using System.Windows.Interop;
 
 namespace PDF_Editor.Source.Controls;
 
-internal class DocumentView : ScrollViewer // TODO add precision touchpad scrolling
+internal class DocumentControl : ScrollViewer // TODO add precision touchpad scrolling
 {
 	private const int WM_MOUSEWHEEL = 0x020A;
 	private const int WM_MOUSEHWHEEL = 0x020E;

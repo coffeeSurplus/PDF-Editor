@@ -8,11 +8,11 @@
 		<ApplicationIcon>Source/Resources/Icon.ico</ApplicationIcon>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<DebugType>none</DebugType>
-		<DebugSymbols>false</DebugSymbols>
 		<PublishSingleFile>true</PublishSingleFile>
-		<PublishReferencesSymbols>false</PublishReferencesSymbols>
 		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugType>none</DebugType>
 	</PropertyGroup>
 	<ItemGroup>
 		<ApplicationDefinition Include="Source\Styles\App.xaml" />
@@ -28,4 +28,4 @@
 		</ItemGroup>
 		<Delete Files="@(PdbFiles)" />
 	</Target>
-</Project>
+ </Project>

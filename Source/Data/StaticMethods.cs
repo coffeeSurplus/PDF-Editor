@@ -1,6 +1,9 @@
-﻿using PdfSharp.Pdf;
+﻿using PDFiumDotNET.Components.Contracts.Page;
+using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 
 namespace PDF_Editor.Source.Data;
 
@@ -28,6 +31,7 @@ internal static class StaticMethods
 	}
 	public static string InsertToFileName(this string parameter, string text) => Path.GetFileNameWithoutExtension(parameter) + text + ".pdf";
 	public static string InsertToFilePath(this string parameter, string text) => parameter.Replace(".pdf", text + ".pdf", StringComparison.OrdinalIgnoreCase);
+	public static string? TextToNullableString(this string parameter) => parameter != string.Empty ? parameter : null;
 	public static bool TextToIntValid(this string parameter, int maxValue, bool maxValueInclusive = false) => parameter == string.Empty || !parameter.Contains(' ') && int.TryParse(parameter, out int intValue) && intValue >= 1 && (maxValueInclusive ? intValue <= maxValue : intValue < maxValue);
 	public static bool TextToIntListValid(this string parameter, int maxValue, bool maxValueInclusive = false) => parameter == string.Empty || (!parameter.Replace(" ", string.Empty).Contains(",,") && parameter.Split(',').All(x => x.Trim() == string.Empty || int.TryParse(x, out int intValue) && intValue >= 1 && (maxValueInclusive ? intValue <= maxValue : intValue < maxValue)));
 	public static bool TextToIntListOrderValid(this string parameter, bool emptyValid = false)
@@ -50,6 +54,7 @@ internal static class StaticMethods
 		}
 	}
 	public static List<int> TextToIntList(this string parameter) => parameter != string.Empty ? [.. parameter.Split(',').Select(int.Parse)] : [];
+	public static List<Size> GetPageSizes(this ObservableCollection<IPDFPage> parameter) => [.. parameter.Select(x => new Size((int)(x.Width / 72 * 25.4), (int)(x.Height / 72 * 25.4))).Distinct()];
 	public static bool PropertiesChanged(this string parameter, string title, string author, string creator, string keywords, string subject)
 	{
 		using PdfDocument currentDocument = PdfReader.Open(parameter, PdfDocumentOpenMode.Import);

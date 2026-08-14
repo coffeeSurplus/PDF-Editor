@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace PDF_Editor.Source.Controls;
 
-internal class ContentView : TreeView
+internal class ContentTreeViewControl : TreeView
 {
 	protected override void OnPreviewKeyDown(KeyEventArgs e)
 	{

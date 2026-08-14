@@ -5,6 +5,22 @@ using System.Windows.Data;
 
 namespace PDF_Editor.Source.Converters;
 
+internal class SidepanelCollapseButtonToolTipConverter : IValueConverter
+{
+	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	{
+		if (value is bool collapsed)
+		{
+			return collapsed ? "Expand (Ctrl + Alt + S)" : "Collapse (Ctrl + Alt + S)";
+		}
+		else
+		{
+			return Binding.DoNothing;
+		}
+	}
+	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
 internal class SidepanelFileButtonConverter : IMultiValueConverter
 {
 	public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
