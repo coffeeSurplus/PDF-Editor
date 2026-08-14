@@ -311,7 +311,19 @@
 	<Style TargetType="Viewbox">
 		<Setter Property="Width" Value="175"/>
 	</Style>
-	<Style TargetType="Window" x:Key="MainWindow">
+	<Style TargetType="WrapPanel">
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="control:ContentTreeViewControl">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
+		<Setter Property="BorderThickness" Value="0"/>
+		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Continue"/>
+		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue"/>
+		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+	</Style>
+	<Style TargetType="control:WindowControl" x:Key="MainWindow">
 		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
 		<Setter Property="Height" Value="600"/>
 		<Setter Property="MinHeight" Value="600"/>
@@ -322,18 +334,6 @@
 				<WindowChrome/>
 			</Setter.Value>
 		</Setter>
-	</Style>
-	<Style TargetType="WrapPanel">
-		<Setter Property="Focusable" Value="False"/>
-		<Setter Property="HorizontalAlignment" Value="Center"/>
-	</Style>
-	<Style TargetType="control:ContentView">
-		<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
-		<Setter Property="BorderThickness" Value="0"/>
-		<Setter Property="Focusable" Value="False"/>
-		<Setter Property="KeyboardNavigation.DirectionalNavigation" Value="Continue"/>
-		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue"/>
-		<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
 	</Style>
 	<Style TargetType="viewer:PDFView">
 		<Setter Property="Background" Value="{StaticResource ResourceKey=Transparent}"/>

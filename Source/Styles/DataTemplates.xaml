@@ -405,7 +405,7 @@
 	</DataTemplate>
 	<HierarchicalDataTemplate x:Key="NavigationContentHierarchicalDataTemplate" DataType="bookmark:IPDFBookmark" ItemsSource="{Binding Path=Bookmarks}">
 		<Border Style="{StaticResource ResourceKey=NavigationItemButtonBorder}">
-			<Button Style="{StaticResource ResourceKey=NavigationItemButton}" Command="{Binding Path=DataContext.NavigationContentNavigateCommand, RelativeSource={RelativeSource AncestorType=control:ContentView}}" CommandParameter="{Binding}">
+			<Button Style="{StaticResource ResourceKey=NavigationItemButton}" Command="{Binding Path=DataContext.NavigationContentNavigateCommand, RelativeSource={RelativeSource AncestorType=control:ContentTreeViewControl}}" CommandParameter="{Binding}">
 				<TextBlock Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="{Binding Path=Text}"/>
 			</Button>
 		</Border>

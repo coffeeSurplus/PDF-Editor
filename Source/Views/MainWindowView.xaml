@@ -1,17 +1,20 @@
-﻿<Window x:Class="PDF_Editor.Source.Views.MainWindowView"
+﻿<control:WindowControl x:Class="PDF_Editor.Source.Views.MainWindowView"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:icon="clr-namespace:FontAwesome.Sharp;assembly=FontAwesome.Sharp"
 		xmlns:viewModel="clr-namespace:PDF_Editor.Source.ViewModels"
 		xmlns:control="clr-namespace:PDF_Editor.Source.Controls"
 		Style="{StaticResource ResourceKey=MainWindow}" WindowState="{Binding Path=MainWindowState}">
-	<Window.DataContext>
+	<control:WindowControl.DataContext>
 		<viewModel:MainWindowViewModel/>
-	</Window.DataContext>
-	<Window.InputBindings>
+	</control:WindowControl.DataContext>
+	<control:WindowControl.InputBindings>
 		<KeyBinding Key="O" Modifiers="Ctrl" Command="{Binding Path=EditBrowseCommandAsync}"/>
 		<KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding Path=EditSaveAsCommandAsync}"/>
-		<KeyBinding Key="E" Modifiers="Ctrl" Command="{Binding Path=ToolbarPageViewCommand}"/>
+		<KeyBinding Key="Up" Modifiers="Ctrl+Alt" Command="{Binding Path=MainWindowHomeCommand}"/>
+		<KeyBinding Key="Up" Modifiers="Alt" Command="{Binding Path=MainWindowPageBackCommand}"/>
+		<KeyBinding Key="R" Modifiers="Ctrl" Command="{Binding Path=MainWindowRefreshCommandAsync}"/>
+		<KeyBinding Key="P" Modifiers="Ctrl" Command="{Binding Path=ToolbarPageViewCommand}"/>
 		<KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding Path=ToolbarFitToHeightCommand}"/>
 		<KeyBinding Key="W" Modifiers="Ctrl" Command="{Binding Path=ToolbarFitToWidthCommand}"/>
 		<KeyBinding Key="D0" Modifiers="Ctrl" Command="{Binding Path=ToolbarResetZoomCommand}"/>
@@ -20,14 +23,29 @@
 		<KeyBinding Key="Subtract" Modifiers="Ctrl" Command="{Binding Path=ToolbarZoomOutCommand}"/>
 		<KeyBinding Key="OemPlus" Modifiers="Ctrl+Shift" Command="{Binding Path=ToolbarZoomInCommand}"/>
 		<KeyBinding Key="Add" Modifiers="Ctrl" Command="{Binding Path=ToolbarZoomInCommand}"/>
-		<KeyBinding Key="OemOpenBrackets" Modifiers="Ctrl" Command="{Binding Path=ToolbarPreviousPageCommand}"/>
-		<KeyBinding Key="OemCloseBrackets" Modifiers="Ctrl" Command="{Binding Path=ToolbarNextPageCommand}"/>
+		<KeyBinding Key="Left" Modifiers="Alt" Command="{Binding Path=ToolbarPreviousPageCommand}"/>
+		<KeyBinding Key="Right" Modifiers="Alt" Command="{Binding Path=ToolbarNextPageCommand}"/>
 		<KeyBinding Key="F" Modifiers="Ctrl" Command="{Binding Path=ToolbarFindCommand}"/>
 		<KeyBinding Key="B" Modifiers="Ctrl" Command="{Binding Path=ToolbarContentsCommand}"/>
 		<KeyBinding Key="T" Modifiers="Ctrl" Command="{Binding Path=ToolbarThumbnailsCommand}"/>
 		<KeyBinding Key="I" Modifiers="Ctrl" Command="{Binding Path=ToolbarDocumentInformationCommand}"/>
-	</Window.InputBindings>
-	<Window.Title>
+		<KeyBinding Key="D1" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="1"/>
+		<KeyBinding Key="D2" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="2"/>
+		<KeyBinding Key="D3" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="3"/>
+		<KeyBinding Key="D4" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="4"/>
+		<KeyBinding Key="NumPad1" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="1"/>
+		<KeyBinding Key="NumPad2" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="2"/>
+		<KeyBinding Key="NumPad3" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="3"/>
+		<KeyBinding Key="NumPad4" Modifiers="Ctrl" Command="{Binding Path=MainWindowSetPageCommand}" CommandParameter="4"/>
+		<KeyBinding Key="D1" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="1"/>
+		<KeyBinding Key="D2" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="2"/>
+		<KeyBinding Key="D3" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="3"/>
+		<KeyBinding Key="D4" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="4"/>
+		<KeyBinding Key="D5" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="5"/>
+		<KeyBinding Key="D6" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="6"/>
+		<KeyBinding Key="D7" Modifiers="Ctrl+Alt" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="7"/>
+	</control:WindowControl.InputBindings>
+	<control:WindowControl.Title>
 		<MultiBinding Converter="{StaticResource ResourceKey=MainWindowTitle}">
 			<Binding Path="PageCurrentPage"/>
 			<Binding Path="HomeCurrentPage"/>
@@ -36,7 +54,7 @@
 			<Binding Path="PageCurrentDesktopPath"/>
 			<Binding Path="PageCurrentDownloadsPath"/>
 		</MultiBinding>
-	</Window.Title>
+	</control:WindowControl.Title>
 	<Grid>
 		<Border Padding="{Binding Path=MainWindowState, Converter={StaticResource ResourceKey=MainWindowBorderPadding}}">
 			<Grid>
@@ -66,27 +84,27 @@
 						</StackPanel>
 						<Rectangle Grid.Row="1" Style="{StaticResource ResourceKey=SidepanelRectangle}"/>
 						<Border Grid.Row="2" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
-							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=1}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Home">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=1}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Home" ToolTip="Home (Ctrl + 1)">
 								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Home"/>
 							</ToggleButton>
 						</Border>
 						<Border Grid.Row="3" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
-							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=2}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Documents">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=2}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Documents" ToolTip="Documents (Ctrl + 2)">
 								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="FileAlt"/>
 							</ToggleButton>
 						</Border>
 						<Border Grid.Row="4" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
-							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=3}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Desktop">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=3}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Desktop" ToolTip="Desktop (Ctrl + 3)">
 								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Desktop"/>
 							</ToggleButton>
 						</Border>
 						<Border Grid.Row="5" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
-							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=4}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Downloads">
+							<ToggleButton Style="{StaticResource ResourceKey=SidepanelToggleButton}" IsChecked="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToBool}, ConverterParameter=4}" Command="{Binding Path=SidepanelFolderCommand}" ContentStringFormat="Downloads" ToolTip="Downloads (Ctrl + 4)">
 								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="Download"/>
 							</ToggleButton>
 						</Border>
 						<Border Grid.Row="6" Style="{StaticResource ResourceKey=SidepanelButtonBorder}">
-							<Button Style="{StaticResource ResourceKey=SidepanelButton}" Command="{Binding Path=SidepanelBrowseCommandAsync}" ContentStringFormat="Browse">
+							<Button Style="{StaticResource ResourceKey=SidepanelButton}" Command="{Binding Path=SidepanelBrowseCommandAsync}" ContentStringFormat="Browse" ToolTip="Browse (Ctrl + O)">
 								<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Icon="FolderOpen"/>
 							</Button>
 						</Border>
@@ -116,17 +134,17 @@
 							<ColumnDefinition Width="50"/>
 						</Grid.ColumnDefinitions>
 						<Border Grid.Column="0" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=1.2.3.4}">
-							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowHomeCommand}" ToolTip="Home">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowHomeCommand}" ToolTip="Home (Ctrl + Alt + Up)">
 								<Label Style="{StaticResource ResourceKey=HomeIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 							</Button>
 						</Border>
 						<Border Grid.Column="1" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4}">
-							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowPageBackCommand}" ToolTip="Back">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowPageBackCommand}" ToolTip="Back (Alt + Up)">
 								<Label Style="{StaticResource ResourceKey=UpIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 							</Button>
 						</Border>
 						<Border Grid.Column="2" Style="{StaticResource ResourceKey=MainWindowTitleBarButtonBorder}" Visibility="{Binding Path=PageCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2.3.4}">
-							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowRefreshCommandAsync}" ToolTip="Refresh">
+							<Button Style="{StaticResource ResourceKey=MainWindowTitleBarButton}" Command="{Binding Path=MainWindowRefreshCommandAsync}" ToolTip="Refresh (Ctrl + R)">
 								<Label Style="{StaticResource ResourceKey=RotateRightIcon}"/>
 							</Button>
 						</Border>
@@ -175,12 +193,12 @@
 								</Border>
 								<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}">
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="1" ContentStringFormat="Merge PDF">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="1" ContentStringFormat="Merge PDF" ToolTip="Merge PDF (Ctrl + Alt + 1)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Copy"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="2" ContentStringFormat="Split PDF">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="2" ContentStringFormat="Split PDF" ToolTip="Split PDF (Ctrl + Alt + 2)">
 											<Grid>
 												<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="File"/>
 												<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Minus"/>
@@ -188,27 +206,27 @@
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="3" ContentStringFormat="Extract pages">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="3" ContentStringFormat="Extract pages" ToolTip="Extract pages (Ctrl + Alt + 3)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Cut"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="4" ContentStringFormat="Remove pages">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="4" ContentStringFormat="Remove pages" ToolTip="Remove pages (Ctrl + Alt + 4)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Trash"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="5" ContentStringFormat="Reorder pages">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="5" ContentStringFormat="Reorder pages" ToolTip="Reorder pages (Ctrl + Alt + 5)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="ArrowRightArrowLeft"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="6" ContentStringFormat="Rotate pages">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="6" ContentStringFormat="Rotate pages" ToolTip="Rotate pages (Ctrl + Alt + 6)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="Rotate"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=EditButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="7" ContentStringFormat="Edit properties">
+										<Button Style="{StaticResource ResourceKey=EditButton}" Command="{Binding Path=HomeChangePageCommandAsync}" CommandParameter="7" ContentStringFormat="Edit properties" ToolTip="Edit properties (Ctrl + Alt + 7)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=EditIcon}" Icon="FileEdit"/>
 										</Button>
 									</Border>
@@ -245,17 +263,17 @@
 										<ColumnDefinition Width="200"/>
 									</Grid.ColumnDefinitions>
 									<Border Grid.Column="0" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditBrowseCommandAsync}" ContentStringFormat="Browse">
+										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditBrowseCommandAsync}" ContentStringFormat="Browse" ToolTip="Browse (Ctrl + O)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FolderOpen"/>
 										</Button>
 									</Border>
 									<Border Grid.Column="1" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditClearCommandAsync}" ContentStringFormat="Clear">
+										<Button Style="{StaticResource ResourceKey=EditFileButton}" Command="{Binding Path=EditClearCommandAsync}" ContentStringFormat="Clear" ToolTip="Clear (Ctrl + R)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Icon="Remove"/>
 										</Button>
 									</Border>
 									<Border Grid.Column="3" Style="{StaticResource ResourceKey=EditToolButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=EditSaveButton}" Command="{Binding Path=EditSaveAsCommandAsync}" ContentStringFormat="Save as">
+										<Button Style="{StaticResource ResourceKey=EditSaveButton}" Command="{Binding Path=EditSaveAsCommandAsync}" ContentStringFormat="Save as" ToolTip="Save as (Ctrl + S)">
 											<icon:IconBlock Style="{StaticResource ResourceKey=SidepanelIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Icon="Download"/>
 										</Button>
 									</Border>
@@ -408,7 +426,7 @@
 							<Grid>
 								<StackPanel Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}">
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPageViewCommand}" ToolTip="Page view (Ctrl + E)">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPageViewCommand}" ToolTip="Page view (Ctrl + P)">
 											<Label Style="{StaticResource ResourceKey=PageViewIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
@@ -446,12 +464,12 @@
 									<TextBox Style="{StaticResource ResourceKey=ToolbarTextBox}" Text="{Binding Path=ToolbarCurrentPageText, UpdateSourceTrigger=PropertyChanged}"/>
 									<TextBlock Style="{StaticResource ResourceKey=ToolbarTextBlock}" Text="{Binding Path=PageCurrentPDF.PageCount, StringFormat=of {0}}"/>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPreviousPageCommand}" ToolTip="Previous page (Ctrl + [)">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarPreviousPageCommand}" ToolTip="Previous page (Alt + Left)">
 											<Label Style="{StaticResource ResourceKey=LeftIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
 									<Border Style="{StaticResource ResourceKey=ToolbarButtonBorder}">
-										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarNextPageCommand}" ToolTip="Next page (Ctrl + ])">
+										<Button Style="{StaticResource ResourceKey=ToolbarButton}" Command="{Binding Path=ToolbarNextPageCommand}" ToolTip="Next page (Alt + Right)">
 											<Label Style="{StaticResource ResourceKey=RightIcon}" Foreground="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
 										</Button>
 									</Border>
@@ -644,7 +662,7 @@
 										</Border>
 									</Grid>
 									<Border Grid.Row="1" Style="{StaticResource ResourceKey=NavigationContentBorder}">
-										<control:ContentView ItemsSource="{Binding Path=PDFComponent.BookmarkComponent.Bookmarks}" ItemTemplate="{StaticResource ResourceKey=NavigationContentHierarchicalDataTemplate}"/>
+										<control:ContentTreeViewControl ItemsSource="{Binding Path=PDFComponent.BookmarkComponent.Bookmarks}" ItemTemplate="{StaticResource ResourceKey=NavigationContentHierarchicalDataTemplate}"/>
 									</Border>
 								</Grid>
 							</Border>
@@ -769,4 +787,4 @@
 			</Grid>
 		</Border>
 	</Grid>
-</Window>
+</control:WindowControl>
