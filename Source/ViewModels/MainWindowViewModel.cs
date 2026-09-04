@@ -27,7 +27,7 @@ using System.Windows.Threading;
 
 namespace PDF_Editor.Source.ViewModels;
 
-internal class MainWindowViewModel : ObservableObject
+internal class MainWindowViewModel : ObservableObject // TODO fix single file publish crash
 {
 	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new(), new()];
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
@@ -1625,7 +1625,7 @@ internal class MainWindowViewModel : ObservableObject
 			try
 			{
 				List<IPDFFindPosition> positions = [];
-				await Task.Run(() =>
+				await Task.Run(async () =>
 				{
 					pageComponent.FindComponent.FindText(search, NavigationFindMatchCase, NavigationFindMatchWholeWord, pageIndex =>
 					{
@@ -1641,17 +1641,24 @@ internal class MainWindowViewModel : ObservableObject
 						positions.Add(position);
 						return true;
 					});
+					cancellationToken.ThrowIfCancellationRequested();
+					foreach (IPDFFindPosition position in positions)
+					{
+						await Application.Current.Dispatcher.BeginInvoke(() =>
+						{
+							if (!cancellationToken.IsCancellationRequested)
+							{
+								NavigationCurrentFindResults.Add(position);
+							}
+						}, DispatcherPriority.Background);
+					}
 				}, cancellationToken);
 				cancellationToken.ThrowIfCancellationRequested();
-				foreach (IPDFFindPosition position in positions)
-				{
-					NavigationCurrentFindResults.Add(position);
-				}
 				PageLoading = false;
 			}
 			catch (OperationCanceledException) { }
 		}
-	} // TODO improve NavigationFind UI responsiveness
+	}
 
 	private void InitialiseOpenFileDialog(bool multiselect)
 	{
