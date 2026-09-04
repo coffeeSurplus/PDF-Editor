@@ -69,13 +69,20 @@ PDF Editor - view and edit PDF documents
 
 ## 'Where exe'
 
-I've uploaded the application as an executeable file to the releases section - there are two versions:
-- PDFEditorLarge - self-contained .exe file, ~170 Mb in size; does not require additional installations
-- PDFEditorSmall - framework-dependent .exe file, ~16.0 Mb in size; requires [net8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) to be installed
+I've uploaded the application as an executable file to the releases section - there are four versions:
+* PDFEditor_x64_framework-dependent.exe - requires [net8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) to be installed
+* PDFEditor_x64_self-contained.exe - does not require additional installations
+* PDFEditor_x86_framework-dependent.exe - requires [net8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) to be installed
+* PDFEditor_x86_self-contained.exe - does not require additional installations
+
+In addition, pdfium.dll is required for the application to run (see [Build](#build))
 
 ## Build
 
-Building the application requires pdfium.dll in the base directory or \PDFium\[x64 or x86]\ for PdfiumDotNET.WPFControls to run.
+Building the application requires one of the following:
+* pdfium.dll located in the base directory (must match runtime target)
+* pdfium.[x64 or x65].dll located in the base directory
+* pdfium.dll located in \PDFium\[x64 or x86]\ (must match runtime target)
 
 ## Libraries used
 
