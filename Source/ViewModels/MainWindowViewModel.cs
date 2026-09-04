@@ -27,7 +27,7 @@ using System.Windows.Threading;
 
 namespace PDF_Editor.Source.ViewModels;
 
-internal class MainWindowViewModel : ObservableObject // TODO fix single file publish crash
+internal class MainWindowViewModel : ObservableObject
 {
 	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new(), new()];
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
