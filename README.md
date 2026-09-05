@@ -79,10 +79,10 @@ In addition, pdfium.dll is required for the application to run (see [Build](#bui
 
 ## Build
 
-Building the application requires one of the following:
-* pdfium.dll located in the base directory (must match runtime target)
-* pdfium.[x64 or x65].dll located in the base directory
-* pdfium.dll located in \PDFium\[x64 or x86]\ (must match runtime target)
+Building the application requires pdfium.dll with the matching application runtime target at one of the following locations:
+* pdfium.dll located in the base directory
+* pdfium.[x64 or x86].dll located in the base directory
+* pdfium.dll located in \PDFium\[x64 or x86]\
 
 ## Libraries used
 
