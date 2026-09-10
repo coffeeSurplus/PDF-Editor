@@ -1,0 +1,9 @@
+﻿dotnet publish --output C:\Users\Lewis\Downloads\ --configuration release --runtime win-x64 --framework net8.0-windows --self-contained false
+dotnet publish --output C:\Users\Lewis\Downloads\ --configuration release --runtime win-x64 --framework net8.0-windows --self-contained true
+dotnet publish --output C:\Users\Lewis\Downloads\ --configuration release --runtime win-x86 --framework net8.0-windows --self-contained false
+dotnet publish --output C:\Users\Lewis\Downloads\ --configuration release --runtime win-x86 --framework net8.0-windows --self-contained true
+
+PDFEditor_x64_framework-dependent.exe
+PDFEditor_x64_self-contained.exe
+PDFEditor_x86_framework-dependent.exe
+PDFEditor_x86_self-contained.exe

@@ -1060,7 +1060,7 @@ internal class MainWindowViewModel : ObservableObject
 		{
 			await SidepanelBrowseAsync();
 		}
-	}
+	} // TODO handle EditBrowseAsync password protected files
 	private async Task EditClearAsync() => await ResetHomeEditPageAsync();
 	private async Task EditSaveAsAsync()
 	{
@@ -1303,7 +1303,7 @@ internal class MainWindowViewModel : ObservableObject
 			switch (PDFComponent.OpenDocument(parameter, PopupPassword.TextToNullableString()))
 			{
 				case OpenDocumentResult.Success:
-					(PageCurrentPage, PageCurrentPDF, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false);
+					(PageCurrentPage, PageCurrentPDF, PagePasswordPopupOpen, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false, false);
 					ChangePageView();
 					await Task.Run(async () =>
 					{
@@ -1327,7 +1327,7 @@ internal class MainWindowViewModel : ObservableObject
 						}
 					}, cancellationToken);
 					cancellationToken.ThrowIfCancellationRequested();
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (false, string.Empty, string.Empty, false);
+					(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
 					if (!SidepanelFileList.Contains(parameter))
 					{
 						SidepanelFileList.Add(parameter);
@@ -1379,7 +1379,7 @@ internal class MainWindowViewModel : ObservableObject
 			}
 		}
 		catch (OperationCanceledException) { }
-	} // TODO implement SidepanelFileAsync password protected case
+	}
 	private async Task HomeChangePageAsync(string parameter)
 	{
 		int pageNumber = int.Parse(parameter);
