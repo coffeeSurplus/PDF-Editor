@@ -1298,8 +1298,10 @@ internal class MainWindowViewModel : ObservableObject
 		CancellationToken cancellationToken = GetNewCancellationToken(0, [0, 2]);
 		try
 		{
+			pageComponent.NavigateToPage(1);
 			EditCurrentPages.Clear();
 			PDFComponent.CloseDocument();
+			PageCurrentPDF = null;
 			switch (PDFComponent.OpenDocument(parameter, PopupPassword.TextToNullableString()))
 			{
 				case OpenDocumentResult.Success:

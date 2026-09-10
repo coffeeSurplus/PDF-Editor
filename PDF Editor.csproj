@@ -3,7 +3,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
-		<AssemblyName>PDF_Editor</AssemblyName>
+		<AssemblyName>PDFEditor</AssemblyName>
 		<AssemblyTitle>PDF Editor</AssemblyTitle>
 		<ApplicationIcon>Source/Resources/Icon.ico</ApplicationIcon>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -16,8 +16,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ApplicationDefinition Include="Source\Styles\App.xaml" />
-		<Content Include="PDFium\x64\pdfium.dll" CopyToOutputDirectory="Always" ExcludeFromSingleFile="true" />
-		<Content Include="PDFium\x86\pdfium.dll" CopyToOutputDirectory="Always" ExcludeFromSingleFile="true" />
+		<Content Include="pdfium.x64.dll" CopyToOutputDirectory="Always" ExcludeFromSingleFile="true" />
+		<Content Include="pdfium.x86.dll" CopyToOutputDirectory="Always" ExcludeFromSingleFile="true" />
 		<PackageReference Include="FontAwesome.Sharp" Version="6.6.0" />
 		<PackageReference Include="PDFiumDotNET.WpfControls" Version="1.0.4" />
 		<PackageReference Include="PDFsharp" Version="6.2.4" />
