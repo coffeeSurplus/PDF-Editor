@@ -144,7 +144,7 @@
 	</DataTemplate>
 	<DataTemplate x:Key="HomeFileDataTemplate" DataType="sys:String">
 		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
-			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.SidepanelFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
 				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
 				<Button.ContextMenu>
 					<ContextMenu>
@@ -257,7 +257,7 @@
 	</DataTemplate>
 	<DataTemplate x:Key="PageFileDataTemplate" DataType="sys:String">
 		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
-			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageButton}" Command="{Binding Path=DataContext.SidepanelFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
 				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
 				<Button.ContextMenu>
 					<ContextMenu>
@@ -309,7 +309,7 @@
 	</DataTemplate>
 	<DataTemplate x:Key="PageSearchFileDataTemplate" DataType="sys:String">
 		<Border Style="{StaticResource ResourceKey=PageButtonBorder}">
-			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.PageOpenFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
+			<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Style="{StaticResource ResourceKey=PageSearchButton}" Command="{Binding Path=DataContext.SidepanelFileCommandAsync, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" ContentStringFormat="{Binding}">
 				<icon:IconBlock Style="{StaticResource ResourceKey=PageButtonIcon}" Icon="FilePdf"/>
 				<Button.ContextMenu>
 					<ContextMenu>

@@ -19,7 +19,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -46,6 +48,7 @@ internal class MainWindowViewModel : ObservableObject
 	public ObservableCollection<IPDFFindPosition> NavigationCurrentFindResults { get; } = [];
 	public IPDFComponent PDFComponent { get; } = PDFFactory.PDFComponent;
 	public PDFView PageView { get; }
+	public PasswordBox PasswordBox { get; } = new();
 
 	private WindowState mainWindowState = WindowState.Normal;
 	private bool sidepanelCollapsed = false;
@@ -65,6 +68,7 @@ internal class MainWindowViewModel : ObservableObject
 	private bool pageEmpty = false;
 	private PDFModel? pageCurrentPDF = null;
 	private bool pageLoading = false;
+	private bool pagePasswordPopupOpen = false;
 	private string pageCurrentDocumentsPath = DataManager.DocumentsPath;
 	private string pageCurrentDesktopPath = DataManager.DesktopPath;
 	private string pageCurrentDownloadsPath = DataManager.DownloadsPath;
@@ -77,6 +81,10 @@ internal class MainWindowViewModel : ObservableObject
 	private bool toolbarContentsOpen = false;
 	private bool toolbarThumbnailsOpen = false;
 	private bool toolbarDocumentInformationOpen = false;
+	private string popupPassword = string.Empty;
+	private string popupPasswordFilePath = string.Empty;
+	private bool popupPasswordCancelled = false;
+	private bool popupPasswordIncorrect = false;
 	private bool popupPageViewTwoPages = false;
 	private bool popupPageViewSeparateCoverPage = false;
 	private string navigationCurrentFindText = string.Empty;
@@ -200,6 +208,27 @@ internal class MainWindowViewModel : ObservableObject
 		get => pageLoading;
 		set => SetValue(ref pageLoading, value);
 	}
+	public bool PagePasswordPopupOpen
+	{
+		get => pagePasswordPopupOpen;
+		set
+		{
+			SetValue(ref pagePasswordPopupOpen, value);
+			if (PopupPasswordCancelled)
+			{
+				if (PageCurrentPage == 0 || PageCurrentPDF?.FilePath == PopupPasswordFilePath)
+				{
+					PageCurrentPage = 1;
+					LoadDefaultPage();
+				}
+				if (SidepanelFileList.Contains(PopupPasswordFilePath))
+				{
+					RemoveSidepanelFile(PopupPasswordFilePath);
+				}
+				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled) = (string.Empty, string.Empty, false);
+			}
+		}
+	}
 	public string PageCurrentDocumentsPath
 	{
 		get => pageCurrentDocumentsPath;
@@ -284,6 +313,26 @@ internal class MainWindowViewModel : ObservableObject
 		get => toolbarDocumentInformationOpen;
 		set => SetValue(ref toolbarDocumentInformationOpen, value);
 	}
+	public string PopupPassword
+	{
+		get => popupPassword;
+		set => SetValue(ref popupPassword, value);
+	}
+	public string PopupPasswordFilePath
+	{
+		get => popupPasswordFilePath;
+		set => SetValue(ref popupPasswordFilePath, value);
+	}
+	public bool PopupPasswordCancelled
+	{
+		get => popupPasswordCancelled;
+		set => SetValue(ref popupPasswordCancelled, value);
+	}
+	public bool PopupPasswordIncorrect
+	{
+		get => popupPasswordIncorrect;
+		set => SetValue(ref popupPasswordIncorrect, value);
+	}
 	public bool PopupPageViewTwoPages
 	{
 		get => popupPageViewTwoPages;
@@ -342,6 +391,7 @@ internal class MainWindowViewModel : ObservableObject
 	public RelayCommand ToolbarContentsCommand { get; }
 	public RelayCommand ToolbarThumbnailsCommand { get; }
 	public RelayCommand ToolbarDocumentInformationCommand { get; }
+	public RelayCommand PopupPasswordCancelCommand { get; }
 	public RelayCommand PopupClosePageViewCommand { get; }
 	public RelayCommand PopupChangePageViewCommand { get; }
 	public RelayCommand PopupCloseDocumentInformationCommand { get; }
@@ -374,12 +424,12 @@ internal class MainWindowViewModel : ObservableObject
 	public AsyncRelayCommand EditBrowseCommandAsync { get; }
 	public AsyncRelayCommand EditClearCommandAsync { get; }
 	public AsyncRelayCommand EditSaveAsCommandAsync { get; }
+	public AsyncRelayCommand PopupPasswordOpenCommandAsync { get; }
 	public AsyncRelayCommand NavigationChangeFindTextOptionsCommandAsync { get; }
 
 	public AsyncRelayCommand<string> SidepanelFileCommandAsync { get; }
 	public AsyncRelayCommand<string> HomeChangePageCommandAsync { get; }
 	public AsyncRelayCommand<string> PageOpenFolderCommandAsync { get; }
-	public AsyncRelayCommand<string> PageOpenFileCommandAsync { get; }
 	public AsyncRelayCommand<string> PageUnpinCommandAsync { get; }
 	public AsyncRelayCommand<IPDFFindPosition> NavigationFindNavigateCommandAsync { get; }
 
@@ -394,6 +444,7 @@ internal class MainWindowViewModel : ObservableObject
 		pageComponent = PDFComponent.LayoutComponent.CreatePageComponent("PageComponent", PageLayoutType.Standard);
 		pageComponent.PropertyChanged += UpdateCurrentPageText;
 		pageComponent.ZoomComponent.ZoomChanged += UpdateCurrentZoomText;
+		PasswordBox.PasswordChanged += UpdatePassword;
 		PageView = new() { PDFPageComponent = pageComponent };
 		MainWindowHomeCommand = new(MainWindowHome, CanMainWindowHomeOrPageBack);
 		MainWindowPageBackCommand = new(MainWindowPageBack, CanMainWindowHomeOrPageBack);
@@ -423,6 +474,7 @@ internal class MainWindowViewModel : ObservableObject
 		ToolbarContentsCommand = new(ToolbarContents, CanToolbarContents);
 		ToolbarThumbnailsCommand = new(ToolbarThumbnails);
 		ToolbarDocumentInformationCommand = new(ToolbarDocumentInformation);
+		PopupPasswordCancelCommand = new(PopupPasswordCancel);
 		PopupClosePageViewCommand = new(PopupClosePageView);
 		PopupChangePageViewCommand = new(PopupChangePageView);
 		PopupCloseDocumentInformationCommand = new(PopupCloseDocumentInformation);
@@ -453,11 +505,11 @@ internal class MainWindowViewModel : ObservableObject
 		EditBrowseCommandAsync = new(EditBrowseAsync);
 		EditClearCommandAsync = new(EditClearAsync, CanEditClearAsync);
 		EditSaveAsCommandAsync = new(EditSaveAsAsync, CanEditSaveAsAsync);
+		PopupPasswordOpenCommandAsync = new(PopupPasswordOpenAsync, CanPopupPasswordOpenAsync);
 		NavigationChangeFindTextOptionsCommandAsync = new(NavigationChangeFindTextOptionsAsync);
 		SidepanelFileCommandAsync = new(SidepanelFileAsync);
 		HomeChangePageCommandAsync = new(HomeChangePageAsync);
 		PageOpenFolderCommandAsync = new(PageOpenFolderAsync);
-		PageOpenFileCommandAsync = new(PageOpenFileAsync);
 		PageUnpinCommandAsync = new(PageUnpinAsync);
 		NavigationFindNavigateCommandAsync = new(NavigationFindNavigateAsync);
 	}
@@ -501,7 +553,6 @@ internal class MainWindowViewModel : ObservableObject
 	{
 		if (e.PropertyName == "CurrentPageIndex")
 		{
-			CommandManager.InvalidateRequerySuggested();
 			int currentPage = pageComponent.CurrentPageIndex;
 			ToolbarCurrentPageText = currentPage.ToString();
 			for (int index = 0; index < EditCurrentPages.Count; index++)
@@ -511,6 +562,7 @@ internal class MainWindowViewModel : ObservableObject
 		}
 	}
 	private void UpdateCurrentZoomText(object? sender, ZoomChangedEventArgs e) => ToolbarCurrentZoomText = pageComponent.ZoomComponent.CurrentZoomPercentage.ToString();
+	private void UpdatePassword(object sender, RoutedEventArgs e) => PopupPassword = PasswordBox.Password;
 
 	private void MainWindowHome()
 	{
@@ -686,7 +738,7 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private void ToolbarZoomIn()
 	{
-		if (PageCurrentPage == 0 && CanToolbarZoomOut())
+		if (PageCurrentPage == 0 && CanToolbarZoomIn())
 		{
 			pageComponent.ZoomComponent.IncreaseZoom();
 		}
@@ -733,12 +785,9 @@ internal class MainWindowViewModel : ObservableObject
 			(ToolbarPageViewOpen, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, ToolbarDocumentInformationOpen, NavigationCurrentFindText) = (false, false, false, false, true, string.Empty);
 		}
 	}
+	private void PopupPasswordCancel() => PagePasswordPopupOpen = false;
 	private void PopupClosePageView() => ToolbarPageViewOpen = false;
-	private void PopupChangePageView()
-	{
-		PDFComponent.LayoutComponent.ChangePageLayout("PageComponent", PopupPageViewTwoPages ? PopupPageViewSeparateCoverPage ? PageLayoutType.TwoColumnsSpecial : PageLayoutType.TwoColumns : PageLayoutType.Standard);
-		PageView.InvalidateVisual();
-	}
+	private void PopupChangePageView() => ChangePageView();
 	private void PopupCloseDocumentInformation() => ToolbarDocumentInformationOpen = false;
 	private void NavigationCloseFind() => (ToolbarFindOpen, NavigationCurrentFindText) = (false, string.Empty);
 	private void NavigationClearCurrentFindText() => NavigationCurrentFindText = string.Empty;
@@ -813,15 +862,7 @@ internal class MainWindowViewModel : ObservableObject
 		SidepanelFileList.RemoveAt(index);
 		SidepanelFileList.Insert(index + 1, parameter);
 	}
-	private void ContextMenuRemove(string parameter)
-	{
-		SidepanelFileList.Remove(parameter);
-		if (PageCurrentPDF?.FilePath == parameter)
-		{
-			(PageCurrentPDF, PageCurrentPage) = (null, 1);
-			LoadDefaultPage();
-		}
-	}
+	private void ContextMenuRemove(string parameter) => RemoveSidepanelFile(parameter);
 	private void PageMoveUp(string parameter)
 	{
 		ObservableCollection<string> fileList = GetHomePDFList(parameter);
@@ -983,7 +1024,6 @@ internal class MainWindowViewModel : ObservableObject
 											{
 												EditCurrentPages.Add(new(thumbnail, displayIndex));
 												displayIndex++;
-												CommandManager.InvalidateRequerySuggested();
 											}
 										}, DispatcherPriority.Background);
 									}
@@ -1058,7 +1098,7 @@ internal class MainWindowViewModel : ObservableObject
 								{
 									if (!cancellationToken.IsCancellationRequested)
 									{
-										await PageOpenFileAsync(saveFilePath);
+										await SidepanelFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
 							}, cancellationToken);
@@ -1139,7 +1179,7 @@ internal class MainWindowViewModel : ObservableObject
 									{
 										if (!cancellationToken.IsCancellationRequested)
 										{
-											await PageOpenFileAsync(saveFilePath);
+											await SidepanelFileAsync(saveFilePath);
 										}
 									}, DispatcherPriority.Background);
 								}
@@ -1163,7 +1203,7 @@ internal class MainWindowViewModel : ObservableObject
 								{
 									if (!cancellationToken.IsCancellationRequested)
 									{
-										await PageOpenFileAsync(saveFilePath);
+										await SidepanelFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
 							}, cancellationToken);
@@ -1186,7 +1226,7 @@ internal class MainWindowViewModel : ObservableObject
 								{
 									if (!cancellationToken.IsCancellationRequested)
 									{
-										await PageOpenFileAsync(saveFilePath);
+										await SidepanelFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
 							}, cancellationToken);
@@ -1209,7 +1249,7 @@ internal class MainWindowViewModel : ObservableObject
 								{
 									if (!cancellationToken.IsCancellationRequested)
 									{
-										await PageOpenFileAsync(saveFilePath);
+										await SidepanelFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
 							}, cancellationToken);
@@ -1233,7 +1273,7 @@ internal class MainWindowViewModel : ObservableObject
 								{
 									if (!cancellationToken.IsCancellationRequested)
 									{
-										await PageOpenFileAsync(saveFilePath);
+										await SidepanelFileAsync(saveFilePath);
 									}
 								}, DispatcherPriority.Background);
 							}, cancellationToken);
@@ -1246,6 +1286,11 @@ internal class MainWindowViewModel : ObservableObject
 			}
 		}
 	}
+	private async Task PopupPasswordOpenAsync()
+	{
+		PopupPasswordCancelled = false;
+		await SidepanelFileAsync(PopupPasswordFilePath);
+	}
 	private async Task NavigationChangeFindTextOptionsAsync() => await RefreshFindAsync();
 
 	private async Task SidepanelFileAsync(string parameter)
@@ -1253,45 +1298,84 @@ internal class MainWindowViewModel : ObservableObject
 		CancellationToken cancellationToken = GetNewCancellationToken(0, [0, 2]);
 		try
 		{
-			FileError? fileError = parameter.FileError();
-			if (fileError == null)
+			EditCurrentPages.Clear();
+			PDFComponent.CloseDocument();
+			switch (PDFComponent.OpenDocument(parameter, PopupPassword.TextToNullableString()))
 			{
-				EditCurrentPages.Clear();
-				PDFComponent.CloseDocument();
-				PDFComponent.OpenDocument(parameter);
-				(PageCurrentPage, PageCurrentPDF, PageLoading, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), true, false, false, false, false, false, false, false, false);
-				PopupChangePageView();
-				await Task.Run(async () =>
-				{
-					cancellationToken.ThrowIfCancellationRequested();
-					byte[] file = await File.ReadAllBytesAsync(parameter);
-					cancellationToken.ThrowIfCancellationRequested();
-					int displayIndex = 1;
-					await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
+				case OpenDocumentResult.Success:
+					(PageCurrentPage, PageCurrentPDF, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false);
+					ChangePageView();
+					await Task.Run(async () =>
 					{
 						cancellationToken.ThrowIfCancellationRequested();
-						BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
-						thumbnail.Freeze();
-						await Application.Current.Dispatcher.BeginInvoke(() =>
+						byte[] file = await File.ReadAllBytesAsync(parameter);
+						cancellationToken.ThrowIfCancellationRequested();
+						int displayIndex = 1;
+						await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PopupPassword.TextToNullableString())) using (page)
 						{
-							if (!cancellationToken.IsCancellationRequested)
+							cancellationToken.ThrowIfCancellationRequested();
+							BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+							thumbnail.Freeze();
+							await Application.Current.Dispatcher.BeginInvoke(() =>
 							{
-								EditCurrentPages.Add(new(thumbnail, displayIndex));
-								displayIndex++;
-							}
-						}, DispatcherPriority.Background);
+								if (!cancellationToken.IsCancellationRequested)
+								{
+									EditCurrentPages.Add(new(thumbnail, displayIndex));
+									displayIndex++;
+								}
+							}, DispatcherPriority.Background);
+						}
+					}, cancellationToken);
+					cancellationToken.ThrowIfCancellationRequested();
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (false, string.Empty, string.Empty, false);
+					if (!SidepanelFileList.Contains(parameter))
+					{
+						SidepanelFileList.Add(parameter);
 					}
-				}, cancellationToken);
-				PageLoading = false;
-				CommandManager.InvalidateRequerySuggested();
-			}
-			else
-			{
-				MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - File error");
-				if (SidepanelFileList.Contains(parameter))
-				{
-					ContextMenuRemove(parameter);
-				}
+					break;
+				case OpenDocumentResult.PasswordProtected:
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PopupPassword != string.Empty);
+					break;
+				case OpenDocumentResult.UnknownError:
+					MessageBox.Show($"An unknown error occured.\n({parameter})", "PDF Editor - Unknown error");
+					goto default;
+				case OpenDocumentResult.FileProblem:
+					MessageBox.Show($"The file was not found or could not be opened.\n({parameter})", "PDF Editor - File error");
+					goto default;
+				case OpenDocumentResult.FormatError:
+					MessageBox.Show($"The file is not in PDF format or is corrupted.\n({parameter})", "PDF Editor - Format error");
+					goto default;
+				case OpenDocumentResult.SecurityError:
+					MessageBox.Show($"The file contained an unsupported security scheme.\n({parameter})", "PDF Editor - Security error");
+					goto default;
+				case OpenDocumentResult.PageError:
+					MessageBox.Show($"A page was not found or a content error occurred.\n({parameter})", "PDF Editor - Page error");
+					goto default;
+				case OpenDocumentResult.XFALoad:
+					MessageBox.Show($"An error occured during load of XFA.\n({parameter})", "PDF Editor - XFA load error");
+					goto default;
+				case OpenDocumentResult.XFALayout:
+					MessageBox.Show($"The layout of XFA was unexpected.\n({parameter})", "PDF Editor - XFA load error");
+					goto default;
+				default:
+					if (PageCurrentPage == 0)
+					{
+						PageCurrentPage = 1;
+						LoadDefaultPage();
+					}
+					if (SidepanelFileList.Contains(parameter))
+					{
+						RemoveSidepanelFile(parameter);
+					}
+					if (HomeFileList.Contains(parameter))
+					{
+						await PageUnpinAsync(parameter);
+					}
+					else
+					{
+						await RefreshPageAsync();
+					}
+					break;
 			}
 		}
 		catch (OperationCanceledException) { }
@@ -1350,34 +1434,6 @@ internal class MainWindowViewModel : ObservableObject
 		{
 			MessageBox.Show($"Folder not found.\n({parameter})", "PDF Editor");
 			if (HomeFolderList.Contains(parameter))
-			{
-				await PageUnpinAsync(parameter);
-			}
-			else
-			{
-				await RefreshPageAsync();
-			}
-		}
-	}
-	private async Task PageOpenFileAsync(string parameter)
-	{
-		FileError? fileError = parameter.FileError();
-		if (fileError == null)
-		{
-			if (!SidepanelFileList.Contains(parameter))
-			{
-				SidepanelFileList.Add(parameter);
-			}
-			await SidepanelFileAsync(parameter);
-		}
-		else
-		{
-			MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - File error");
-			if (SidepanelFileList.Contains(parameter))
-			{
-				ContextMenuRemove(parameter);
-			}
-			if (HomeFileList.Contains(parameter))
 			{
 				await PageUnpinAsync(parameter);
 			}
@@ -1468,6 +1524,7 @@ internal class MainWindowViewModel : ObservableObject
 			_ => false
 		};
 	}
+	private bool CanPopupPasswordOpenAsync() => PopupPassword != string.Empty;
 
 	private async Task ResetHomeEditPageAsync(bool clearCurrentFiles = true)
 	{
@@ -1702,6 +1759,20 @@ internal class MainWindowViewModel : ObservableObject
 		}
 		PDFComponent.CloseDocument();
 		PageCurrentSearchText = string.Empty;
+	}
+	private void ChangePageView()
+	{
+		PDFComponent.LayoutComponent.ChangePageLayout("PageComponent", PopupPageViewTwoPages ? PopupPageViewSeparateCoverPage ? PageLayoutType.TwoColumnsSpecial : PageLayoutType.TwoColumns : PageLayoutType.Standard);
+		PageView.InvalidateVisual();
+	}
+	private void RemoveSidepanelFile(string parameter)
+	{
+		SidepanelFileList.Remove(parameter);
+		if (PageCurrentPDF?.FilePath == parameter)
+		{
+			(PageCurrentPDF, PageCurrentPage) = (null, 1);
+			LoadDefaultPage();
+		}
 	}
 
 	private string GetCurrentPath()

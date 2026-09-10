@@ -99,9 +99,9 @@ internal class MainWindowTitleConverter : IMultiValueConverter
 					7 => "PDF Editor - Edit properties",
 					_ => Binding.DoNothing
 				},
-				2 => "PDF Editor - " + currentDocumentsPath != DataManager.DocumentsPath ? Path.GetFileName(currentDocumentsPath) : "Documents",
-				3 => "PDF Editor - " + currentDesktopPath != DataManager.DesktopPath ? Path.GetFileName(currentDesktopPath) : "Desktop",
-				4 => "PDF Editor - " + currentDownloadsPath != DataManager.DownloadsPath ? Path.GetFileName(currentDownloadsPath) : "Downloads",
+				2 => "PDF Editor - " + (currentDocumentsPath != DataManager.DocumentsPath ? Path.GetFileName(currentDocumentsPath) : "Documents"),
+				3 => "PDF Editor - " + (currentDesktopPath != DataManager.DesktopPath ? Path.GetFileName(currentDesktopPath) : "Desktop"),
+				4 => "PDF Editor - " + (currentDownloadsPath != DataManager.DownloadsPath ? Path.GetFileName(currentDownloadsPath) : "Downloads"),
 				_ => Binding.DoNothing
 			};
 		}

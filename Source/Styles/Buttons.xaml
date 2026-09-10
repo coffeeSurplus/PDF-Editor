@@ -210,6 +210,48 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style TargetType="Button" x:Key="PasswordPopupOpenButton" BasedOn="{StaticResource ResourceKey=DefaultButton}">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=White}"/>
+		<Setter Property="Margin" Value="0,0,2.5,0"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border Style="{StaticResource ResourceKey=ButtonRoundedCornersBorder}" Background="{TemplateBinding Property=Background}">
+						<TextBlock Style="{StaticResource ResourceKey=PasswordPopupTextBlock}" Foreground="{TemplateBinding Property=Foreground}" Text="Open file"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Background" Value="{StaticResource ResourceKey=Secondary}"/>
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>
+							<Setter Property="Foreground" Value="{StaticResource ResourceKey=Dark}"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style TargetType="Button" x:Key="PasswordPopupCancelButton" BasedOn="{StaticResource ResourceKey=DefaultButton}">
+		<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Black}"/>
+		<Setter Property="Margin" Value="2.5,0,0,0"/>
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Border Style="{StaticResource ResourceKey=ButtonRoundedCornersBorder}" Background="{TemplateBinding Property=Background}">
+						<TextBlock Style="{StaticResource ResourceKey=PasswordPopupTextBlock}" Foreground="{TemplateBinding Property=Foreground}" Text="Cancel"/>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Background" Value="{StaticResource ResourceKey=DarkGrey}"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<Style TargetType="Button" x:Key="PopupButton" BasedOn="{StaticResource ResourceKey=DefaultButton}">
 		<Setter Property="Template">
 			<Setter.Value>

@@ -230,29 +230,11 @@
 	</Style>
 	<Style TargetType="ScrollViewer">
 		<Setter Property="Focusable" Value="False"/>
+		<Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
 	</Style>
 	<Style TargetType="ScrollViewer" x:Key="PDFScrollViewer">
 		<Setter Property="CanContentScroll" Value="True"/>
 		<Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="ScrollViewer">
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="1*"/>
-							<ColumnDefinition Width="Auto"/>
-						</Grid.ColumnDefinitions>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="1*"/>
-							<RowDefinition Height="Auto"/>
-						</Grid.RowDefinitions>
-						<ScrollContentPresenter Grid.Column="0" Grid.Row="0" CanContentScroll="{TemplateBinding Property=CanContentScroll}" Content="{TemplateBinding Property=Content}"/>
-						<ScrollBar x:Name="PART_VerticalScrollBar" Grid.Column="1" Grid.Row="0" Maximum="{TemplateBinding Property=ScrollableHeight}" ViewportSize="{TemplateBinding Property=ViewportHeight}" Visibility="{TemplateBinding Property=ComputedVerticalScrollBarVisibility}" Value="{TemplateBinding Property=VerticalOffset}" Orientation="Vertical"/>
-						<ScrollBar x:Name="PART_HorizontalScrollBar" Grid.Column="0" Grid.Row="1" Maximum="{TemplateBinding Property=ScrollableWidth}" ViewportSize="{TemplateBinding Property=ViewportWidth}" Visibility="{TemplateBinding Property=ComputedHorizontalScrollBarVisibility}" Value="{TemplateBinding Property=HorizontalOffset}" Orientation="Horizontal"/>
-					</Grid>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
 		<Style.Resources>
 			<Style TargetType="ScrollContentPresenter">
 				<Setter Property="Height">

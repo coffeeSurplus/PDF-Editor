@@ -784,6 +784,31 @@
 							</Popup>
 						</Grid>
 					</Grid>
+					<Popup Grid.Row="1" Style="{StaticResource ResourceKey=DocumentInformationPopup}" IsOpen="{Binding Path=PagePasswordPopupOpen}">
+						<Border Style="{StaticResource ResourceKey=PopupBorder}">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="40"/>
+									<RowDefinition Height="20"/>
+									<RowDefinition Height="40"/>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="30"/>
+								</Grid.RowDefinitions>
+								<TextBlock Grid.Row="0" Style="{StaticResource ResourceKey=PopupTitleTextBlock}" Text="Enter a password"/>
+								<TextBlock Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="This file is password-protected. Please enter a password to open the file."/>
+								<ContentPresenter Grid.Row="2" Content="{Binding Path=PasswordBox}"/>
+								<TextBlock Grid.Row="3" Style="{StaticResource ResourceKey=PopupPasswordIncorrectTextBlock}" Visibility="{Binding Path=PopupPasswordIncorrect, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}" Text="Incorrect password. Please try again."/>
+								<Grid Grid.Row="4">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="1*"/>
+									</Grid.ColumnDefinitions>
+									<Button Grid.Column="0" Style="{StaticResource ResourceKey=PasswordPopupOpenButton}" Command="{Binding Path=PopupPasswordOpenCommandAsync}"/>
+									<Button Grid.Column="1" Style="{StaticResource ResourceKey=PasswordPopupCancelButton}" Command="{Binding Path=PopupPasswordCancelCommand}"/>
+								</Grid>
+							</Grid>
+						</Border>
+					</Popup>
 				</Grid>
 			</Grid>
 		</Border>
