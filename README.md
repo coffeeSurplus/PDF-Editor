@@ -33,7 +33,7 @@ PDF Editor - view and edit PDF documents
 * Remove pages - remove selected pages from a PDF document
 * Reorder pages - reorder pages in a PDF document
 * Rotate pages - rotate all, selected, or single pages in a PDF document
-* Edit properties - edit Title, Author, Creator, Keywords, and Subject on a PDF document
+* Edit properties - edit Title, Author, Creator, Keywords, Subject, and Password on a PDF document
 
 ## Browse
 

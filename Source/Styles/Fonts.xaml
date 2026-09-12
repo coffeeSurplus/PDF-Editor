@@ -1,7 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Style TargetType="PasswordBox">
-		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
 		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
 		<Setter Property="CaretBrush" Value="{StaticResource ResourceKey=Primary}"/>
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
@@ -9,6 +8,16 @@
 		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Primary}"/>
 		<Setter Property="Margin" Value="0,5,0,5"/>
 		<Setter Property="VerticalContentAlignment" Value="Center"/>
+	</Style>
+	<Style TargetType="PasswordBox" x:Key="EditPropertiesPasswordBox">
+		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=LightGrey}"/>
+		<Setter Property="CaretBrush" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
+		<Setter Property="FontSize" Value="{StaticResource ResourceKey=Body}"/>
+		<Setter Property="Foreground" Value="{StaticResource ResourceKey=Primary}"/>
+		<Setter Property="Margin" Value="5,2.5,5,2.5"/>
+		<Setter Property="VerticalContentAlignment" Value="Center"/>
+		<Setter Property="Width" Value="300"/>
 	</Style>
 	<Style TargetType="TextBlock" x:Key="DefaultTextBlock">
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
@@ -115,7 +124,6 @@
 	<Style TargetType="TextBox" x:Key="DefaultTextBox">
 		<Setter Property="AcceptsReturn" Value="False"/>
 		<Setter Property="AcceptsTab" Value="False"/>
-		<Setter Property="Background" Value="{StaticResource ResourceKey=White}"/>
 		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=Primary}"/>
 		<Setter Property="CaretBrush" Value="{StaticResource ResourceKey=Primary}"/>
 		<Setter Property="FontFamily" Value="{StaticResource ResourceKey=DefaultFont}"/>
@@ -130,7 +138,6 @@
 	</Style>
 	<Style TargetType="TextBox" x:Key="EditPropertiesTextBox" BasedOn="{StaticResource ResourceKey=DefaultTextBox}">
 		<Setter Property="BorderBrush" Value="{StaticResource ResourceKey=LightGrey}"/>
-		<Setter Property="HorizontalAlignment" Value="Left"/>
 		<Setter Property="Margin" Value="5,2.5,5,2.5"/>
 		<Setter Property="Width" Value="300"/>
 	</Style>

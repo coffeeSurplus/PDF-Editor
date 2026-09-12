@@ -360,6 +360,7 @@
 													<RowDefinition Height="30"/>
 													<RowDefinition Height="30"/>
 													<RowDefinition Height="30"/>
+													<RowDefinition Height="30"/>
 												</Grid.RowDefinitions>
 												<TextBlock Grid.Column="0" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Title:"/>
 												<TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditTitleText, UpdateSourceTrigger=PropertyChanged}"/>
@@ -371,6 +372,8 @@
 												<TextBox Grid.Column="1" Grid.Row="3" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditKeywordsText, UpdateSourceTrigger=PropertyChanged}"/>
 												<TextBlock Grid.Column="0" Grid.Row="4" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Subject:"/>
 												<TextBox Grid.Column="1" Grid.Row="4" Style="{StaticResource ResourceKey=EditPropertiesTextBox}" Text="{Binding Path=EditSubjectText, UpdateSourceTrigger=PropertyChanged}"/>
+												<TextBlock Grid.Column="0" Grid.Row="5" Style="{StaticResource ResourceKey=EditPropertiesTextBlock}" Text="Password:"/>
+												<ContentPresenter Grid.Column="1" Grid.Row="5" Content="{Binding Path=EditPasswordBox}"/>
 											</Grid>
 										</Border>
 									</Grid>
@@ -798,7 +801,7 @@
 								<TextBlock Grid.Row="0" Style="{StaticResource ResourceKey=PopupTitleTextBlock}" Text="Enter a password"/>
 								<TextBlock Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="This file is password-protected. Please enter a password to open the file."/>
 								<TextBlock Grid.Row="2" Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="{Binding Path=PopupPasswordFilePath, StringFormat=({0})}"/>
-								<ContentPresenter Grid.Row="3" Content="{Binding Path=PasswordBox}"/>
+								<ContentPresenter Grid.Row="3" Content="{Binding Path=PopupPasswordBox}"/>
 								<TextBlock Grid.Row="4" Style="{StaticResource ResourceKey=PopupPasswordIncorrectTextBlock}" Visibility="{Binding Path=PopupPasswordIncorrect, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}" Text="Incorrect password. Please try again."/>
 								<Grid Grid.Row="5">
 									<Grid.ColumnDefinitions>

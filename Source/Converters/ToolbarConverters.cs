@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace PDF_Editor.Source.Converters;
 
@@ -42,7 +43,7 @@ internal class ToolbarDocumentInformationTextForegroundConverter : IValueConvert
 	{
 		if (Application.Current is Application application && value is string or null)
 		{
-			return application.FindResource(value is string ? "Black" : "DarkGrey");
+			return (Brush)application.FindResource(value is string ? "Black" : "DarkGrey");
 		}
 		else
 		{

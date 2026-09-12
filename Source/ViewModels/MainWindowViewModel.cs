@@ -49,8 +49,10 @@ internal class MainWindowViewModel : ObservableObject
 	public ObservableCollection<IPDFFindPosition> NavigationCurrentFindResults { get; } = [];
 	public IPDFComponent PDFComponent { get; } = PDFFactory.PDFComponent;
 	public PDFView PageView { get; }
-	public PasswordBox PasswordBox { get; } = new();
+	public PasswordBox PopupPasswordBox { get; } = new();
+	public PasswordBox EditPasswordBox { get; } = new() { Style = (Style)Application.Current.FindResource("EditPropertiesPasswordBox") };
 
+	private PdfDocumentInformation? editCurrentFileProperties = null;
 	private bool editMode = false;
 	private bool popupPasswordCancelled = false;
 
@@ -231,10 +233,10 @@ internal class MainWindowViewModel : ObservableObject
 						RemoveSidepanelFile(PopupPasswordFilePath);
 					}
 				}
-				(PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled) = (string.Empty, string.Empty, false);
+				(PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled) = (string.Empty, string.Empty, false);
 				if (passwordProtectedFiles.Count > 0)
 				{
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+					(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 				}
 			}
 		}
@@ -634,10 +636,7 @@ internal class MainWindowViewModel : ObservableObject
 				break;
 			case 7:
 				{
-					using PdfDocument currentDocument = GetCurrentDocument();
-					PdfDocumentInformation information = currentDocument.Info;
-					(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
-					currentDocument.Close();
+					(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password) = (editCurrentFileProperties!.Title, editCurrentFileProperties!.Author, editCurrentFileProperties!.Creator, editCurrentFileProperties!.Keywords, editCurrentFileProperties!.Subject, EditCurrentFile!.Password ?? string.Empty);
 				}
 				break;
 			default:
@@ -945,7 +944,7 @@ internal class MainWindowViewModel : ObservableObject
 					}
 					if (passwordProtectedFiles.Count > 0)
 					{
-						(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+						(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 					}
 				}, cancellationToken);
 			}
@@ -1023,7 +1022,14 @@ internal class MainWindowViewModel : ObservableObject
 											EditCurrentFile = new(file);
 											using PdfDocument currentDocument = GetCurrentDocument();
 											PdfDocumentInformation information = currentDocument.Info;
-											(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
+											await Application.Current.Dispatcher.BeginInvoke(() =>
+											{
+												if (!cancellationToken.IsCancellationRequested)
+												{
+													(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password, editCurrentFileProperties) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject, EditCurrentFile.Password ?? string.Empty, (PdfDocumentInformation)information.Clone());
+												}
+											}, DispatcherPriority.Background);
+											cancellationToken.ThrowIfCancellationRequested();
 											currentDocument.Close();
 										}
 										break;
@@ -1050,7 +1056,7 @@ internal class MainWindowViewModel : ObservableObject
 							{
 								if (!cancellationToken.IsCancellationRequested)
 								{
-									(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+									(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 								}
 							}, DispatcherPriority.Background);
 						}
@@ -1273,7 +1279,7 @@ internal class MainWindowViewModel : ObservableObject
 								}
 								cancellationToken.ThrowIfCancellationRequested();
 								currentDocument.Close();
-								outputDocument.Info.SetProperties(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText);
+								outputDocument.SetProperties(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password);
 								outputDocument.Save(saveFilePath);
 								outputDocument.Close();
 								await Application.Current.Dispatcher.BeginInvoke(async () =>
@@ -1306,7 +1312,7 @@ internal class MainWindowViewModel : ObservableObject
 				await Task.Run(async () =>
 				{
 					cancellationToken.ThrowIfCancellationRequested();
-					FileError? fileError = pdfOpenComponent.FileError(PopupPasswordFilePath, PasswordBox.Password);
+					FileError? fileError = pdfOpenComponent.FileError(PopupPasswordFilePath, PopupPasswordBox.Password.TextToNullableString());
 					if (fileError == null)
 					{
 						PagePasswordPopupOpen = false;
@@ -1320,14 +1326,14 @@ internal class MainWindowViewModel : ObservableObject
 									{
 										if (!cancellationToken.IsCancellationRequested)
 										{
-											EditCurrentFiles.Add(new(PopupPasswordFilePath, EditCurrentFiles.Count + 1, PopupPasswordFilePath.FilePageCount(PasswordBox.Password), PasswordBox.Password));
+											EditCurrentFiles.Add(new(PopupPasswordFilePath, EditCurrentFiles.Count + 1, PopupPasswordFilePath.FilePageCount(PopupPasswordBox.Password.TextToNullableString()), PopupPasswordBox.Password.TextToNullableString()));
 											CommandManager.InvalidateRequerySuggested();
 										}
 									}, DispatcherPriority.Background);
 								}
 								break;
 							case >= 2 and <= 6:
-								EditCurrentFile = new(PopupPasswordFilePath, PasswordBox.Password);
+								EditCurrentFile = new(PopupPasswordFilePath, PopupPasswordBox.Password.TextToNullableString());
 								await Application.Current.Dispatcher.BeginInvoke(() =>
 								{
 									if (!cancellationToken.IsCancellationRequested)
@@ -1338,7 +1344,7 @@ internal class MainWindowViewModel : ObservableObject
 								byte[] bytes = await File.ReadAllBytesAsync(EditCurrentFile.FilePath);
 								cancellationToken.ThrowIfCancellationRequested();
 								int displayIndex = 1;
-								await foreach (SKBitmap page in Conversion.ToImagesAsync(bytes, PasswordBox.Password)) using (page)
+								await foreach (SKBitmap page in Conversion.ToImagesAsync(bytes, PopupPasswordBox.Password.TextToNullableString())) using (page)
 								{
 									cancellationToken.ThrowIfCancellationRequested();
 									BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
@@ -1355,10 +1361,17 @@ internal class MainWindowViewModel : ObservableObject
 								break;
 							case 7:
 								{
-									EditCurrentFile = new(PopupPasswordFilePath, PasswordBox.Password);
+									EditCurrentFile = new(PopupPasswordFilePath, PopupPasswordBox.Password.TextToNullableString());
 									using PdfDocument currentDocument = GetCurrentDocument();
 									PdfDocumentInformation information = currentDocument.Info;
-									(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
+									await Application.Current.Dispatcher.BeginInvoke(() =>
+									{
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password, editCurrentFileProperties) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject, EditCurrentFile.Password ?? string.Empty, (PdfDocumentInformation)information.Clone());
+										}
+									}, DispatcherPriority.Background);
+									cancellationToken.ThrowIfCancellationRequested();
 									currentDocument.Close();
 								}
 								break;
@@ -1371,13 +1384,13 @@ internal class MainWindowViewModel : ObservableObject
 						{
 							if (!cancellationToken.IsCancellationRequested)
 							{
-								(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
+								(PopupPasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
 							}
 						}, DispatcherPriority.Background);
 						cancellationToken.ThrowIfCancellationRequested();
 						if (passwordProtectedFiles.Count > 0)
 						{
-							(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+							(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 						}
 					}
 					else if (fileError.IsPasswordError)
@@ -1386,7 +1399,7 @@ internal class MainWindowViewModel : ObservableObject
 						{
 							if (!cancellationToken.IsCancellationRequested)
 							{
-								(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+								(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 							}
 						}, DispatcherPriority.Background);
 					}
@@ -1419,7 +1432,7 @@ internal class MainWindowViewModel : ObservableObject
 			EditCurrentPages.Clear();
 			PDFComponent.CloseDocument();
 			PageCurrentPDF = null;
-			FileError? fileError = PDFComponent.FileError(parameter, PasswordBox.Password.TextToNullableString(), false);
+			FileError? fileError = PDFComponent.FileError(parameter, PopupPasswordBox.Password.TextToNullableString(), false);
 			if (fileError == null)
 			{
 				(PageCurrentPage, PageCurrentPDF, PagePasswordPopupOpen, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false, false);
@@ -1434,7 +1447,7 @@ internal class MainWindowViewModel : ObservableObject
 					byte[] file = await File.ReadAllBytesAsync(parameter);
 					cancellationToken.ThrowIfCancellationRequested();
 					int displayIndex = 1;
-					await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PasswordBox.Password.TextToNullableString())) using (page)
+					await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PopupPasswordBox.Password.TextToNullableString())) using (page)
 					{
 						cancellationToken.ThrowIfCancellationRequested();
 						BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
@@ -1451,15 +1464,15 @@ internal class MainWindowViewModel : ObservableObject
 				}, cancellationToken);
 				cancellationToken.ThrowIfCancellationRequested();
 				passwordProtectedFiles.Remove(PopupPasswordFilePath);
-				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
+				(PopupPasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
 				if (passwordProtectedFiles.Count > 0)
 				{
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+					(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
 				}
 			}
 			else if (fileError.IsPasswordError)
 			{
-				(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PasswordBox.Password != string.Empty);
+				(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PopupPasswordBox.Password != string.Empty);
 			}
 			else
 			{
@@ -1585,7 +1598,7 @@ internal class MainWindowViewModel : ObservableObject
 			3 or 4 => EditCurrentPages.Any(x => x.IsSelected),
 			5 => !EditCurrentPages.SequenceEqual(EditCurrentPages.OrderBy(x => x.DisplayIndex)),
 			6 => EditCurrentPages.Any(x => x.Rotate != 0),
-			7 => EditCurrentFile != null && EditCurrentFile.FilePath.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditCurrentFile.Password),
+			7 => EditCurrentFile != null && editCurrentFileProperties.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password, EditCurrentFile.Password),
 			_ => false
 		};
 	}
@@ -1626,11 +1639,11 @@ internal class MainWindowViewModel : ObservableObject
 			4 => EditCurrentFile != null && EditCurrentPages.Any(x => x.IsSelected) && EditCurrentPages.Any(x => !x.IsSelected) && EditSelectedPagesText.TextToIntListOrderValid(),
 			5 => EditCurrentFile != null && !EditCurrentPages.SequenceEqual(EditCurrentPages.OrderBy(x => x.DisplayIndex)),
 			6 => EditCurrentFile != null && EditCurrentPages.Any(x => x.Rotate != 0),
-			7 => EditCurrentFile != null && EditCurrentFile.FilePath.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditCurrentFile.Password),
+			7 => EditCurrentFile != null && editCurrentFileProperties.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password, EditCurrentFile.Password),
 			_ => false
 		};
 	}
-	private bool CanPopupPasswordOpenAsync() => PasswordBox.Password != string.Empty;
+	private bool CanPopupPasswordOpenAsync() => PopupPasswordBox.Password != string.Empty;
 
 	private void InitialiseOpenFileDialog(bool multiselect)
 	{
@@ -1697,7 +1710,7 @@ internal class MainWindowViewModel : ObservableObject
 			EditCurrentFiles.Clear();
 		}
 		EditCurrentPages.Clear();
-		EditCurrentFile = null;
+		(EditCurrentFile, editCurrentFileProperties) = (null, null);
 		switch (HomeCurrentPage)
 		{
 			case 1 or 5:
@@ -1712,7 +1725,7 @@ internal class MainWindowViewModel : ObservableObject
 				EditSelectedPagesText = string.Empty;
 				break;
 			case 7:
-				(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+				(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password) = (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
 				break;
 			default:
 				return;

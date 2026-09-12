@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 namespace PDF_Editor.Source.Converters;
 
@@ -36,7 +37,7 @@ internal class EditThumbnailBorderBrushConverter : IValueConverter
 	{
 		if (Application.Current is Application application && value is bool isSelected)
 		{
-			return application.FindResource(isSelected ? "Primary" : "Black");
+			return (Brush)application.FindResource(isSelected ? "Primary" : "Black");
 		}
 		else
 		{

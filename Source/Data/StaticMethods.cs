@@ -64,35 +64,32 @@ internal static class StaticMethods
 	}
 	public static List<int> TextToIntList(this string parameter) => parameter != string.Empty ? [.. parameter.Split(',').Select(int.Parse)] : [];
 	public static List<Size> GetPageSizes(this ObservableCollection<IPDFPage> parameter) => [.. parameter.Select(x => new Size((int)(x.Width / 72 * 25.4), (int)(x.Height / 72 * 25.4))).Distinct()];
-	public static bool PropertiesChanged(this string parameter, string title, string author, string creator, string keywords, string subject, string? password = null)
-	{
-		using PdfDocument currentDocument = PdfReader.Open(parameter, password!, PdfDocumentOpenMode.Import);
-		PdfDocumentInformation information = currentDocument.Info;
-		bool canReset = (title, author, creator, keywords, subject) != (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
-		currentDocument.Close();
-		return canReset;
-	}
-	public static void SetProperties(this PdfDocumentInformation documentInformation, string title, string author, string creator, string keywords, string subject)
+	public static bool PropertiesChanged(this PdfDocumentInformation? parameter, string title, string author, string creator, string keywords, string subject, string password, string? filePassword) => parameter != null && (title, author, creator, keywords, subject, password) != (parameter.Title, parameter.Author, parameter.Creator, parameter.Keywords, parameter.Subject, filePassword ?? string.Empty);
+	public static void SetProperties(this PdfDocument document, string title, string author, string creator, string keywords, string subject, string password)
 	{
 		if (!string.IsNullOrWhiteSpace(title))
 		{
-			documentInformation.Title = title;
+			document.Info.Title = title;
 		}
 		if (!string.IsNullOrWhiteSpace(author))
 		{
-			documentInformation.Author = author;
+			document.Info.Author = author;
 		}
 		if (!string.IsNullOrWhiteSpace(creator))
 		{
-			documentInformation.Creator = creator;
+			document.Info.Creator = creator;
 		}
 		if (!string.IsNullOrWhiteSpace(keywords))
 		{
-			documentInformation.Keywords = keywords;
+			document.Info.Keywords = keywords;
 		}
 		if (!string.IsNullOrWhiteSpace(subject))
 		{
-			documentInformation.Subject = subject;
+			document.Info.Subject = subject;
+		}
+		if (!string.IsNullOrWhiteSpace(password))
+		{
+			document.SecuritySettings.UserPassword = password;
 		}
 	}
 }
