@@ -67,7 +67,7 @@
 					</Border>
 					<ControlTemplate.Triggers>
 						<Trigger Property="IsMouseOver" Value="True">
-							<Setter Property="Background" Value="{StaticResource ResourceKey=Light}"/>
+							<Setter Property="Background" Value="{StaticResource ResourceKey=LightGrey}"/>
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
 							<Setter Property="Foreground" Value="{StaticResource ResourceKey=DarkGrey}"/>

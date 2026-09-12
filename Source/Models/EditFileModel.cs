@@ -3,12 +3,13 @@ using System.IO;
 
 namespace PDF_Editor.Source.Models;
 
-internal class EditFileModel(string filePath, int displayIndex, int pageCount) : ObservableObject
+internal class EditFileModel(string filePath, int displayIndex, int pageCount, string? password = null) : ObservableObject
 {
 	private string filePath = filePath;
 	private string fileName = Path.GetFileNameWithoutExtension(filePath);
 	private int displayIndex = displayIndex;
 	private string pageCountText = pageCount + (pageCount == 1 ? " page" : " pages");
+	private string? password = password;
 
 	public string FilePath
 	{
@@ -30,4 +31,11 @@ internal class EditFileModel(string filePath, int displayIndex, int pageCount) :
 		get => pageCountText;
 		set => SetValue(ref pageCountText, value);
 	}
+	public string? Password
+	{
+		get => password;
+		set => SetValue(ref password, value);
+	}
+
+	public EditFileModel(string filePath, string? password = null) : this(filePath, 0, 0, password) { }
 }

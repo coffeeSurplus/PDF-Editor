@@ -287,7 +287,7 @@
 												<RowDefinition Height="30"/>
 											</Grid.RowDefinitions>
 											<Border Grid.Row="0" Style="{StaticResource ResourceKey=TextBlockBorder}">
-												<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="{Binding Path=EditCurrentFile, Converter={StaticResource ResourceKey=SidepanelFileName}}"/>
+												<TextBlock Style="{StaticResource ResourceKey=PageButtonTextBlock}" Text="{Binding Path=EditCurrentFile.FileName}"/>
 											</Border>
 											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=2}">
 												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Split mode:"/>
@@ -298,7 +298,7 @@
 												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSplitAfterPagesText, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding Path=EditSplitMode, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=3}"/>
 											</StackPanel>
 											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=3}">
-												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Clear selection"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditClearSelectionCommand}" ContentStringFormat="Clear selection"/>
 												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Extract mode:"/>
 												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSaveAsIndividualFiles, Converter={StaticResource ResourceKey=GeneralBoolToBool}, ConverterParameter=invert}" ContentStringFormat="Save as one file"/>
 												<ToggleButton Style="{StaticResource ResourceKey=EditToggleButton}" IsChecked="{Binding Path=EditSaveAsIndividualFiles, Converter={StaticResource ResourceKey=GeneralBoolToBool}}" ContentStringFormat="Save as individual files"/>
@@ -306,7 +306,7 @@
 												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSelectedPagesText, UpdateSourceTrigger=PropertyChanged}"/>
 											</StackPanel>
 											<StackPanel Grid.Row="1" Style="{StaticResource ResourceKey=ToolbarLeftStackPanel}" Visibility="{Binding Path=HomeCurrentPage, Converter={StaticResource ResourceKey=GeneralIntToVisibility}, ConverterParameter=4}">
-												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditResetCommand}" ContentStringFormat="Clear selection"/>
+												<Button Style="{StaticResource ResourceKey=EditToolButton}" Command="{Binding Path=EditClearSelectionCommand}" ContentStringFormat="Clear selection"/>
 												<TextBlock Style="{StaticResource ResourceKey=EditButtonLabelTextBlock}" Text="Remove pages:"/>
 												<TextBox Style="{StaticResource ResourceKey=EditTextBox}" Text="{Binding Path=EditSelectedPagesText, UpdateSourceTrigger=PropertyChanged}"/>
 											</StackPanel>
@@ -784,7 +784,7 @@
 							</Popup>
 						</Grid>
 					</Grid>
-					<Popup Grid.Row="1" Style="{StaticResource ResourceKey=DocumentInformationPopup}" IsOpen="{Binding Path=PagePasswordPopupOpen}">
+					<Popup Grid.Row="1" Style="{StaticResource ResourceKey=PasswordPopup}" IsOpen="{Binding Path=PagePasswordPopupOpen}">
 						<Border Style="{StaticResource ResourceKey=PopupBorder}">
 							<Grid>
 								<Grid.RowDefinitions>
@@ -797,7 +797,7 @@
 								</Grid.RowDefinitions>
 								<TextBlock Grid.Row="0" Style="{StaticResource ResourceKey=PopupTitleTextBlock}" Text="Enter a password"/>
 								<TextBlock Grid.Row="1" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="This file is password-protected. Please enter a password to open the file."/>
-								<TextBlock Grid.Row="2" Style="{StaticResource ResourceKey=PopupTextBlock}" Text="{Binding Path=PopupPasswordFilePath, StringFormat=({0})}"/>
+								<TextBlock Grid.Row="2" Style="{StaticResource ResourceKey=NavigationTextBlock}" Text="{Binding Path=PopupPasswordFilePath, StringFormat=({0})}"/>
 								<ContentPresenter Grid.Row="3" Content="{Binding Path=PasswordBox}"/>
 								<TextBlock Grid.Row="4" Style="{StaticResource ResourceKey=PopupPasswordIncorrectTextBlock}" Visibility="{Binding Path=PopupPasswordIncorrect, Converter={StaticResource ResourceKey=GeneralBoolToVisibility}}" Text="Incorrect password. Please try again."/>
 								<Grid Grid.Row="5">

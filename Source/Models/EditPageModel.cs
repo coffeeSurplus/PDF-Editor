@@ -34,6 +34,7 @@ internal class EditPageModel(BitmapSource thumbnail, int displayIndex) : Observa
 		set => SetValue(ref rotate, value);
 	}
 
+	public void ResetPage() => (IsSelected, Rotate, RotateTransform.Angle) = (false, 0, 0);
 	public void RotateLeft() => RotateThumbnail(-90);
 	public void RotateRight() => RotateThumbnail(90);
 

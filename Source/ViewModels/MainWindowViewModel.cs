@@ -51,10 +51,13 @@ internal class MainWindowViewModel : ObservableObject
 	public PDFView PageView { get; }
 	public PasswordBox PasswordBox { get; } = new();
 
+	private bool editMode = false;
+	private bool popupPasswordCancelled = false;
+
 	private WindowState mainWindowState = WindowState.Normal;
 	private bool sidepanelCollapsed = false;
 	private int homeCurrentPage = 0;
-	private string? editCurrentFile = null;
+	private EditFileModel? editCurrentFile = null;
 	private int editSplitMode = 1;
 	private string editSplitEveryNPagesText = string.Empty;
 	private string editSplitAfterPagesText = string.Empty;
@@ -75,16 +78,14 @@ internal class MainWindowViewModel : ObservableObject
 	private string pageCurrentDownloadsPath = DataManager.DownloadsPath;
 	private string pageCurrentSearchText = string.Empty;
 	private bool toolbarPageViewOpen = false;
-	private bool toolbarFitToHeight = false;
+	private bool toolbarFitToHeightButtonVisible = false;
 	private string toolbarCurrentZoomText = "100";
 	private string toolbarCurrentPageText = "1";
 	private bool toolbarFindOpen = false;
 	private bool toolbarContentsOpen = false;
 	private bool toolbarThumbnailsOpen = false;
 	private bool toolbarDocumentInformationOpen = false;
-	private string popupPassword = string.Empty;
 	private string popupPasswordFilePath = string.Empty;
-	private bool popupPasswordCancelled = false;
 	private bool popupPasswordIncorrect = false;
 	private bool popupPageViewTwoPages = false;
 	private bool popupPageViewSeparateCoverPage = false;
@@ -107,7 +108,7 @@ internal class MainWindowViewModel : ObservableObject
 		get => homeCurrentPage;
 		set => SetValue(ref homeCurrentPage, value);
 	}
-	public string? EditCurrentFile
+	public EditFileModel? EditCurrentFile
 	{
 		get => editCurrentFile;
 		set => SetValue(ref editCurrentFile, value);
@@ -215,22 +216,25 @@ internal class MainWindowViewModel : ObservableObject
 		set
 		{
 			SetValue(ref pagePasswordPopupOpen, value);
-			if (PopupPasswordCancelled)
+			if (popupPasswordCancelled)
 			{
 				passwordProtectedFiles.Remove(PopupPasswordFilePath);
-				if (PageCurrentPage == 0 || PageCurrentPDF?.FilePath == PopupPasswordFilePath)
+				if (!editMode)
 				{
-					PageCurrentPage = 1;
-					LoadDefaultPage();
+					if (PageCurrentPage == 0 || PageCurrentPDF?.FilePath == PopupPasswordFilePath)
+					{
+						PageCurrentPage = 1;
+						LoadDefaultPage();
+					}
+					if (SidepanelFileList.Contains(PopupPasswordFilePath))
+					{
+						RemoveSidepanelFile(PopupPasswordFilePath);
+					}
 				}
-				if (SidepanelFileList.Contains(PopupPasswordFilePath))
-				{
-					RemoveSidepanelFile(PopupPasswordFilePath);
-				}
-				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled) = (string.Empty, string.Empty, false);
+				(PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled) = (string.Empty, string.Empty, false);
 				if (passwordProtectedFiles.Count > 0)
 				{
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
 				}
 			}
 		}
@@ -266,8 +270,8 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	public bool ToolbarFitToHeightButtonVisible
 	{
-		get => toolbarFitToHeight;
-		set => SetValue(ref toolbarFitToHeight, value);
+		get => toolbarFitToHeightButtonVisible;
+		set => SetValue(ref toolbarFitToHeightButtonVisible, value);
 	}
 	public string ToolbarCurrentZoomText
 	{
@@ -319,20 +323,10 @@ internal class MainWindowViewModel : ObservableObject
 		get => toolbarDocumentInformationOpen;
 		set => SetValue(ref toolbarDocumentInformationOpen, value);
 	}
-	public string PopupPassword
-	{
-		get => popupPassword;
-		set => SetValue(ref popupPassword, value);
-	}
 	public string PopupPasswordFilePath
 	{
 		get => popupPasswordFilePath;
 		set => SetValue(ref popupPasswordFilePath, value);
-	}
-	public bool PopupPasswordCancelled
-	{
-		get => popupPasswordCancelled;
-		set => SetValue(ref popupPasswordCancelled, value);
 	}
 	public bool PopupPasswordIncorrect
 	{
@@ -450,7 +444,6 @@ internal class MainWindowViewModel : ObservableObject
 		pageComponent = PDFComponent.LayoutComponent.CreatePageComponent("PageComponent", PageLayoutType.Standard);
 		pageComponent.PropertyChanged += UpdateCurrentPageText;
 		pageComponent.ZoomComponent.ZoomChanged += UpdateCurrentZoomText;
-		PasswordBox.PasswordChanged += UpdatePassword;
 		PageView = new() { PDFPageComponent = pageComponent };
 		MainWindowHomeCommand = new(MainWindowHome, CanMainWindowHomeOrPageBack);
 		MainWindowPageBackCommand = new(MainWindowPageBack, CanMainWindowHomeOrPageBack);
@@ -569,7 +562,6 @@ internal class MainWindowViewModel : ObservableObject
 		}
 	}
 	private void UpdateCurrentZoomText(object? sender, ZoomChangedEventArgs e) => ToolbarCurrentZoomText = pageComponent.ZoomComponent.CurrentZoomPercentage.ToString();
-	private void UpdatePassword(object sender, RoutedEventArgs e) => PopupPassword = PasswordBox.Password;
 
 	private void MainWindowHome()
 	{
@@ -625,13 +617,6 @@ internal class MainWindowViewModel : ObservableObject
 	{
 		switch (HomeCurrentPage)
 		{
-			case 3 or 4:
-				foreach (EditPageModel page in EditCurrentPages)
-				{
-					page.IsSelected = false;
-				}
-				EditSelectedPagesText = string.Empty;
-				break;
 			case 5:
 				List<EditPageModel> pages = [.. EditCurrentPages.OrderBy(x => x.DisplayIndex)];
 				EditCurrentPages.Clear();
@@ -643,13 +628,13 @@ internal class MainWindowViewModel : ObservableObject
 			case 6:
 				foreach (EditPageModel page in EditCurrentPages)
 				{
-					(page.IsSelected, page.Rotate) = (false, 0);
+					page.ResetPage();
 				}
 				EditSelectedPagesText = string.Empty;
 				break;
 			case 7:
 				{
-					using PdfDocument currentDocument = PdfReader.Open(EditCurrentFile!, PdfDocumentOpenMode.Import);
+					using PdfDocument currentDocument = GetCurrentDocument();
 					PdfDocumentInformation information = currentDocument.Info;
 					(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
 					currentDocument.Close();
@@ -907,6 +892,7 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task SidepanelBrowseAsync()
 	{
+		editMode = false;
 		InitialiseOpenFileDialog(true);
 		if (openFileDialog.ShowDialog() == true)
 		{
@@ -959,7 +945,7 @@ internal class MainWindowViewModel : ObservableObject
 					}
 					if (passwordProtectedFiles.Count > 0)
 					{
-						(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+						(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
 					}
 				}, cancellationToken);
 			}
@@ -970,116 +956,118 @@ internal class MainWindowViewModel : ObservableObject
 	{
 		if (PageCurrentPage == 1 && HomeCurrentPage != 0)
 		{
+			editMode = true;
 			InitialiseOpenFileDialog(HomeCurrentPage == 1);
 			if (openFileDialog.ShowDialog() == true)
 			{
-				List<FileError> fileErrors = [];
-				if (HomeCurrentPage == 1)
+				await ResetHomeEditPageAsync(false);
+				CancellationToken cancellationToken = GetNewCancellationToken(2, [0, 1, 2]);
+				(PageLoading, PageEmpty) = (true, false);
+				try
 				{
-					foreach (string file in openFileDialog.FileNames)
+					await Task.Run(async () =>
 					{
-						FileError? fileError = pdfOpenComponent.FileError(file);
-						if (fileError != null)
+						List<FileError> fileErrors = [];
+						passwordProtectedFiles.Clear();
+						foreach (string file in openFileDialog.FileNames)
 						{
-							fileErrors.Add(fileError);
-						}
-					}
-				}
-				else
-				{
-					FileError? fileError = pdfOpenComponent.FileError(openFileDialog.FileName);
-					if (fileError != null)
-					{
-						fileErrors.Add(fileError);
-					}
-				}
-				if (HomeCurrentPage == 1 || fileErrors.Count == 0)
-				{
-					await ResetHomeEditPageAsync(false);
-					CancellationToken cancellationToken = GetNewCancellationToken(2, [0, 1, 2]);
-					(PageLoading, PageEmpty) = (true, false);
-					try
-					{
-						switch (HomeCurrentPage)
-						{
-							case 1:
-								await Task.Run(async () =>
+							cancellationToken.ThrowIfCancellationRequested();
+							FileError? fileError = pdfOpenComponent.FileError(file);
+							if (fileError == null)
+							{
+								switch (HomeCurrentPage)
 								{
-									int displayIndex = EditCurrentFiles.Count + 1;
-									foreach (string file in openFileDialog.FileNames.Where(x => !fileErrors.Any(y => y.FilePath == x)))
-									{
-										if (!EditCurrentFiles.Select(x => x.FilePath).Contains(file))
+									case 1:
+										if (!EditCurrentFiles.Any(x => x.FilePath == file))
 										{
 											cancellationToken.ThrowIfCancellationRequested();
 											await Application.Current.Dispatcher.BeginInvoke(() =>
 											{
 												if (!cancellationToken.IsCancellationRequested)
 												{
-													EditCurrentFiles.Add(new(file, displayIndex, file.FilePageCount()));
-													displayIndex++;
+													EditCurrentFiles.Add(new(file, EditCurrentFiles.Count + 1, file.FilePageCount()));
 													CommandManager.InvalidateRequerySuggested();
 												}
 											}, DispatcherPriority.Background);
 										}
-									}
-								}, cancellationToken);
-								break;
-							case >= 2 and <= 6:
-								EditCurrentFile = openFileDialog.FileName;
-								EditCurrentPages.Clear();
-								await Task.Run(async () =>
-								{
-									byte[] file = await File.ReadAllBytesAsync(EditCurrentFile);
-									cancellationToken.ThrowIfCancellationRequested();
-									int displayIndex = 1;
-									await foreach (SKBitmap page in Conversion.ToImagesAsync(file)) using (page)
-									{
-										cancellationToken.ThrowIfCancellationRequested();
-										BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
-										thumbnail.Freeze();
+										break;
+									case >= 2 and <= 6:
+										EditCurrentFile = new(file);
 										await Application.Current.Dispatcher.BeginInvoke(() =>
 										{
 											if (!cancellationToken.IsCancellationRequested)
 											{
-												EditCurrentPages.Add(new(thumbnail, displayIndex));
-												displayIndex++;
+												EditCurrentPages.Clear();
 											}
 										}, DispatcherPriority.Background);
-									}
-								}, cancellationToken);
-								break;
-							case 7:
-								EditCurrentFile = openFileDialog.FileName;
-								await Task.Run(() =>
-								{
-									cancellationToken.ThrowIfCancellationRequested();
-									using PdfDocument currentDocument = PdfReader.Open(EditCurrentFile, PdfDocumentOpenMode.Import);
-									PdfDocumentInformation information = currentDocument.Info;
-									(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
-									currentDocument.Close();
-								}, cancellationToken);
-								break;
-							default:
-								return;
+										byte[] bytes = await File.ReadAllBytesAsync(EditCurrentFile.FilePath);
+										cancellationToken.ThrowIfCancellationRequested();
+										int displayIndex = 1;
+										await foreach (SKBitmap page in Conversion.ToImagesAsync(bytes)) using (page)
+										{
+											cancellationToken.ThrowIfCancellationRequested();
+											BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+											thumbnail.Freeze();
+											await Application.Current.Dispatcher.BeginInvoke(() =>
+											{
+												if (!cancellationToken.IsCancellationRequested)
+												{
+													EditCurrentPages.Add(new(thumbnail, displayIndex));
+													displayIndex++;
+												}
+											}, DispatcherPriority.Background);
+										}
+										break;
+									case 7:
+										{
+											EditCurrentFile = new(file);
+											using PdfDocument currentDocument = GetCurrentDocument();
+											PdfDocumentInformation information = currentDocument.Info;
+											(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
+											currentDocument.Close();
+										}
+										break;
+									default:
+										return;
+								}
+							}
+							else if (fileError.IsPasswordError && !EditCurrentFiles.Any(x => x.FilePath == file))
+							{
+								passwordProtectedFiles.Add(file);
+							}
+							else if (!fileError.IsPasswordError)
+							{
+								fileErrors.Add(fileError);
+							}
 						}
-						cancellationToken.ThrowIfCancellationRequested();
-						await RefreshPageAsync();
-						PageLoading = false;
-						CommandManager.InvalidateRequerySuggested();
-					}
-					catch (OperationCanceledException) { }
+						foreach (FileError fileError in fileErrors)
+						{
+							MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
+						}
+						if (passwordProtectedFiles.Count > 0)
+						{
+							await Application.Current.Dispatcher.BeginInvoke(() =>
+							{
+								if (!cancellationToken.IsCancellationRequested)
+								{
+									(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+								}
+							}, DispatcherPriority.Background);
+						}
+					}, cancellationToken);
+					cancellationToken.ThrowIfCancellationRequested();
+					await RefreshPageAsync();
+					PageLoading = false;
+					CommandManager.InvalidateRequerySuggested();
 				}
-				foreach (FileError fileError in fileErrors)
-				{
-					MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
-				}
+				catch (OperationCanceledException) { }
 			}
 		}
 		else
 		{
 			await SidepanelBrowseAsync();
 		}
-	} // TODO handle EditBrowseAsync password protected files
+	}
 	private async Task EditClearAsync() => await ResetHomeEditPageAsync();
 	private async Task EditSaveAsAsync()
 	{
@@ -1307,13 +1295,123 @@ internal class MainWindowViewModel : ObservableObject
 	}
 	private async Task PopupPasswordOpenAsync()
 	{
-		PopupPasswordCancelled = false;
-		await SidepanelFileAsync(PopupPasswordFilePath);
+		popupPasswordCancelled = false;
+		if (editMode)
+		{
+			await ResetHomeEditPageAsync(false);
+			CancellationToken cancellationToken = GetNewCancellationToken(2, [0, 1, 2]);
+			(PageLoading, PageEmpty) = (true, false);
+			try
+			{
+				await Task.Run(async () =>
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+					FileError? fileError = pdfOpenComponent.FileError(PopupPasswordFilePath, PasswordBox.Password);
+					if (fileError == null)
+					{
+						PagePasswordPopupOpen = false;
+						switch (HomeCurrentPage)
+						{
+							case 1:
+								if (!EditCurrentFiles.Any(x => x.FilePath == PopupPasswordFilePath))
+								{
+									cancellationToken.ThrowIfCancellationRequested();
+									await Application.Current.Dispatcher.BeginInvoke(() =>
+									{
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											EditCurrentFiles.Add(new(PopupPasswordFilePath, EditCurrentFiles.Count + 1, PopupPasswordFilePath.FilePageCount(PasswordBox.Password), PasswordBox.Password));
+											CommandManager.InvalidateRequerySuggested();
+										}
+									}, DispatcherPriority.Background);
+								}
+								break;
+							case >= 2 and <= 6:
+								EditCurrentFile = new(PopupPasswordFilePath, PasswordBox.Password);
+								await Application.Current.Dispatcher.BeginInvoke(() =>
+								{
+									if (!cancellationToken.IsCancellationRequested)
+									{
+										EditCurrentPages.Clear();
+									}
+								}, DispatcherPriority.Background);
+								byte[] bytes = await File.ReadAllBytesAsync(EditCurrentFile.FilePath);
+								cancellationToken.ThrowIfCancellationRequested();
+								int displayIndex = 1;
+								await foreach (SKBitmap page in Conversion.ToImagesAsync(bytes, PasswordBox.Password)) using (page)
+								{
+									cancellationToken.ThrowIfCancellationRequested();
+									BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+									thumbnail.Freeze();
+									await Application.Current.Dispatcher.BeginInvoke(() =>
+									{
+										if (!cancellationToken.IsCancellationRequested)
+										{
+											EditCurrentPages.Add(new(thumbnail, displayIndex));
+											displayIndex++;
+										}
+									}, DispatcherPriority.Background);
+								}
+								break;
+							case 7:
+								{
+									EditCurrentFile = new(PopupPasswordFilePath, PasswordBox.Password);
+									using PdfDocument currentDocument = GetCurrentDocument();
+									PdfDocumentInformation information = currentDocument.Info;
+									(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText) = (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
+									currentDocument.Close();
+								}
+								break;
+							default:
+								return;
+						}
+						cancellationToken.ThrowIfCancellationRequested();
+						passwordProtectedFiles.Remove(PopupPasswordFilePath);
+						Application.Current.Dispatcher.Invoke(() =>
+						{
+							if (!cancellationToken.IsCancellationRequested)
+							{
+								(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
+							}
+						}, DispatcherPriority.Background);
+						cancellationToken.ThrowIfCancellationRequested();
+						if (passwordProtectedFiles.Count > 0)
+						{
+							(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+						}
+					}
+					else if (fileError.IsPasswordError)
+					{
+						await Application.Current.Dispatcher.BeginInvoke(() =>
+						{
+							if (!cancellationToken.IsCancellationRequested)
+							{
+								(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
+							}
+						}, DispatcherPriority.Background);
+					}
+					else
+					{
+						MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
+					}
+				}, cancellationToken);
+				cancellationToken.ThrowIfCancellationRequested();
+				await RefreshPageAsync();
+				PageLoading = false;
+				CommandManager.InvalidateRequerySuggested();
+			}
+			catch (OperationCanceledException) { }
+		}
+		else
+		{
+			await SidepanelFileAsync(PopupPasswordFilePath);
+		}
 	}
 	private async Task NavigationChangeFindTextOptionsAsync() => await RefreshFindAsync();
 
 	private async Task SidepanelFileAsync(string parameter)
 	{
+		editMode = false;
 		CancellationToken cancellationToken = GetNewCancellationToken(0, [0, 2]);
 		try
 		{
@@ -1321,7 +1419,7 @@ internal class MainWindowViewModel : ObservableObject
 			EditCurrentPages.Clear();
 			PDFComponent.CloseDocument();
 			PageCurrentPDF = null;
-			FileError? fileError = PDFComponent.FileError(parameter, PopupPassword.TextToNullableString(), false);
+			FileError? fileError = PDFComponent.FileError(parameter, PasswordBox.Password.TextToNullableString(), false);
 			if (fileError == null)
 			{
 				(PageCurrentPage, PageCurrentPDF, PagePasswordPopupOpen, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false, false);
@@ -1336,7 +1434,7 @@ internal class MainWindowViewModel : ObservableObject
 					byte[] file = await File.ReadAllBytesAsync(parameter);
 					cancellationToken.ThrowIfCancellationRequested();
 					int displayIndex = 1;
-					await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PopupPassword.TextToNullableString())) using (page)
+					await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PasswordBox.Password.TextToNullableString())) using (page)
 					{
 						cancellationToken.ThrowIfCancellationRequested();
 						BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
@@ -1356,12 +1454,12 @@ internal class MainWindowViewModel : ObservableObject
 				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
 				if (passwordProtectedFiles.Count > 0)
 				{
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PasswordBox.Password != string.Empty);
 				}
 			}
 			else if (fileError.IsPasswordError)
 			{
-				(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PopupPassword != string.Empty);
+				(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PasswordBox.Password != string.Empty);
 			}
 			else
 			{
@@ -1487,7 +1585,7 @@ internal class MainWindowViewModel : ObservableObject
 			3 or 4 => EditCurrentPages.Any(x => x.IsSelected),
 			5 => !EditCurrentPages.SequenceEqual(EditCurrentPages.OrderBy(x => x.DisplayIndex)),
 			6 => EditCurrentPages.Any(x => x.Rotate != 0),
-			7 => EditCurrentFile != null && EditCurrentFile.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText),
+			7 => EditCurrentFile != null && EditCurrentFile.FilePath.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditCurrentFile.Password),
 			_ => false
 		};
 	}
@@ -1524,14 +1622,73 @@ internal class MainWindowViewModel : ObservableObject
 				3 => EditSplitAfterPagesText.TextToIntListOrderValid(),
 				_ => false
 			},
-			3 or 4 => EditCurrentFile != null && EditCurrentPages.Any(x => x.IsSelected) && EditCurrentPages.Any(x => !x.IsSelected) && EditSelectedPagesText.TextToIntListOrderValid(),
+			3 => EditCurrentFile != null && EditCurrentPages.Any(x => x.IsSelected) && (EditCurrentPages.Any(x => !x.IsSelected) || EditSaveAsIndividualFiles) && EditSelectedPagesText.TextToIntListOrderValid(),
+			4 => EditCurrentFile != null && EditCurrentPages.Any(x => x.IsSelected) && EditCurrentPages.Any(x => !x.IsSelected) && EditSelectedPagesText.TextToIntListOrderValid(),
 			5 => EditCurrentFile != null && !EditCurrentPages.SequenceEqual(EditCurrentPages.OrderBy(x => x.DisplayIndex)),
 			6 => EditCurrentFile != null && EditCurrentPages.Any(x => x.Rotate != 0),
-			7 => EditCurrentFile != null && EditCurrentFile.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText),
+			7 => EditCurrentFile != null && EditCurrentFile.FilePath.PropertiesChanged(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditCurrentFile.Password),
 			_ => false
 		};
 	}
-	private bool CanPopupPasswordOpenAsync() => PopupPassword != string.Empty;
+	private bool CanPopupPasswordOpenAsync() => PasswordBox.Password != string.Empty;
+
+	private void InitialiseOpenFileDialog(bool multiselect)
+	{
+		openFileDialog.FileName = string.Empty;
+		openFileDialog.Multiselect = multiselect;
+	}
+	private void InitialiseSaveFileDialog()
+	{
+		string filePath = HomeCurrentPage == 1 ? EditCurrentFiles[0].FilePath : EditCurrentFile!.FilePath;
+		saveFileDialog.FileName = filePath.InsertToFileName(HomeCurrentPage switch
+		{
+			1 => " - merge result",
+			2 => " - split result",
+			3 => " - extract result",
+			4 => " - remove result",
+			5 => " - reorder result",
+			6 => " - rotate result",
+			7 => " - edit properties result",
+			_ => string.Empty
+		});
+		saveFileDialog.DefaultDirectory = Path.GetDirectoryName(filePath);
+	}
+	private void LoadDefaultPage()
+	{
+		switch (PageCurrentPage)
+		{
+			case 1:
+				HomeCurrentPage = 0;
+				break;
+			case 2:
+				PageCurrentDocumentsPath = DataManager.DocumentsPath;
+				break;
+			case 3:
+				PageCurrentDesktopPath = DataManager.DesktopPath;
+				break;
+			case 4:
+				PageCurrentDownloadsPath = DataManager.DownloadsPath;
+				break;
+			default:
+				return;
+		}
+		PDFComponent.CloseDocument();
+		(PageCurrentPDF, PageCurrentSearchText) = (null, string.Empty);
+	}
+	private void ChangePageView()
+	{
+		PDFComponent.LayoutComponent.ChangePageLayout("PageComponent", PopupPageViewTwoPages ? PopupPageViewSeparateCoverPage ? PageLayoutType.TwoColumnsSpecial : PageLayoutType.TwoColumns : PageLayoutType.Standard);
+		PageView.InvalidateVisual();
+	}
+	private void RemoveSidepanelFile(string parameter)
+	{
+		SidepanelFileList.Remove(parameter);
+		if (PageCurrentPDF?.FilePath == parameter)
+		{
+			(PageCurrentPDF, PageCurrentPage) = (null, 1);
+			LoadDefaultPage();
+		}
+	}
 
 	private async Task ResetHomeEditPageAsync(bool clearCurrentFiles = true)
 	{
@@ -1724,64 +1881,6 @@ internal class MainWindowViewModel : ObservableObject
 		}
 	}
 
-	private void InitialiseOpenFileDialog(bool multiselect)
-	{
-		openFileDialog.FileName = string.Empty;
-		openFileDialog.Multiselect = multiselect;
-	}
-	private void InitialiseSaveFileDialog()
-	{
-		string filePath = HomeCurrentPage == 1 ? EditCurrentFiles[0].FileName : EditCurrentFile!;
-		saveFileDialog.FileName = filePath.InsertToFileName(HomeCurrentPage switch
-		{
-			1 => " - merge result",
-			2 => " - split result",
-			3 => " - extract result",
-			4 => " - remove result",
-			5 => " - reorder result",
-			6 => " - rotate result",
-			7 => " - edit properties result",
-			_ => string.Empty
-		});
-		saveFileDialog.DefaultDirectory = Path.GetDirectoryName(filePath);
-	}
-	private void LoadDefaultPage()
-	{
-		switch (PageCurrentPage)
-		{
-			case 1:
-				HomeCurrentPage = 0;
-				break;
-			case 2:
-				PageCurrentDocumentsPath = DataManager.DocumentsPath;
-				break;
-			case 3:
-				PageCurrentDesktopPath = DataManager.DesktopPath;
-				break;
-			case 4:
-				PageCurrentDownloadsPath = DataManager.DownloadsPath;
-				break;
-			default:
-				return;
-		}
-		PDFComponent.CloseDocument();
-		PageCurrentSearchText = string.Empty;
-	}
-	private void ChangePageView()
-	{
-		PDFComponent.LayoutComponent.ChangePageLayout("PageComponent", PopupPageViewTwoPages ? PopupPageViewSeparateCoverPage ? PageLayoutType.TwoColumnsSpecial : PageLayoutType.TwoColumns : PageLayoutType.Standard);
-		PageView.InvalidateVisual();
-	}
-	private void RemoveSidepanelFile(string parameter)
-	{
-		SidepanelFileList.Remove(parameter);
-		if (PageCurrentPDF?.FilePath == parameter)
-		{
-			(PageCurrentPDF, PageCurrentPage) = (null, 1);
-			LoadDefaultPage();
-		}
-	}
-
 	private string GetCurrentPath()
 	{
 		return PageCurrentPage switch
@@ -1792,7 +1891,7 @@ internal class MainWindowViewModel : ObservableObject
 			_ => string.Empty
 		};
 	}
-	private PdfDocument GetCurrentDocument(int index = 0) => PdfReader.Open(HomeCurrentPage == 1 ? EditCurrentFiles[index].FilePath : EditCurrentFile!, PdfDocumentOpenMode.Import);
+	private PdfDocument GetCurrentDocument(int index = 0) => PdfReader.Open(HomeCurrentPage == 1 ? EditCurrentFiles[index].FilePath : EditCurrentFile!.FilePath, (HomeCurrentPage == 1 ? EditCurrentFiles[index].Password : EditCurrentFile!.Password)!, PdfDocumentOpenMode.Import);
 	private CancellationToken GetNewCancellationToken(int cancellationTokenSourceIndex, int[] cancelTokenSourcesList)
 	{
 		for (int index = 0; index < cancellationTokenSources.Length; index++)

@@ -31,9 +31,9 @@ internal static class StaticMethods
 			_ => null
 		};
 	}
-	public static int FilePageCount(this string parameter)
+	public static int FilePageCount(this string parameter, string? password = null)
 	{
-		using PdfDocument document = PdfReader.Open(parameter, PdfDocumentOpenMode.Import);
+		using PdfDocument document = PdfReader.Open(parameter, password!, PdfDocumentOpenMode.Import);
 		int pageCount = document.PageCount;
 		document.Close();
 		return pageCount;
@@ -64,9 +64,9 @@ internal static class StaticMethods
 	}
 	public static List<int> TextToIntList(this string parameter) => parameter != string.Empty ? [.. parameter.Split(',').Select(int.Parse)] : [];
 	public static List<Size> GetPageSizes(this ObservableCollection<IPDFPage> parameter) => [.. parameter.Select(x => new Size((int)(x.Width / 72 * 25.4), (int)(x.Height / 72 * 25.4))).Distinct()];
-	public static bool PropertiesChanged(this string parameter, string title, string author, string creator, string keywords, string subject)
+	public static bool PropertiesChanged(this string parameter, string title, string author, string creator, string keywords, string subject, string? password = null)
 	{
-		using PdfDocument currentDocument = PdfReader.Open(parameter, PdfDocumentOpenMode.Import);
+		using PdfDocument currentDocument = PdfReader.Open(parameter, password!, PdfDocumentOpenMode.Import);
 		PdfDocumentInformation information = currentDocument.Info;
 		bool canReset = (title, author, creator, keywords, subject) != (information.Title, information.Author, information.Creator, information.Keywords, information.Subject);
 		currentDocument.Close();
