@@ -1,4 +1,5 @@
-﻿using PDFiumDotNET.Components.Contracts.Page;
+﻿using PDFiumDotNET.Components.Contracts;
+using PDFiumDotNET.Components.Contracts.Page;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using System.Collections.ObjectModel;
@@ -9,18 +10,26 @@ namespace PDF_Editor.Source.Data;
 
 internal static class StaticMethods
 {
-	public static FileError? FileError(this string parameter)
+	public static FileError? FileError(this IPDFComponent parameter, string file, string? password = null, bool closeDocument = true)
 	{
-		try
+		OpenDocumentResult openDocumentResult = parameter.OpenDocument(file, password);
+		if (closeDocument)
 		{
-			using PdfDocument document = PdfReader.Open(parameter, PdfDocumentOpenMode.Import);
-			document.Close();
-			return null;
+			parameter.CloseDocument();
 		}
-		catch (Exception e)
+		return openDocumentResult switch
 		{
-			return new FileError(parameter, e.Message);
-		}
+			OpenDocumentResult.Success => null,
+			OpenDocumentResult.PasswordProtected => new(file, string.Empty, string.Empty, true),
+			OpenDocumentResult.UnknownError => new(file, "An unknown error occured.", "Unknown error"),
+			OpenDocumentResult.FileProblem => new(file, "The file was not found or could not be opened.", "File error"),
+			OpenDocumentResult.FormatError => new(file, "The file is not in PDF format or is corrupted.", "Format error"),
+			OpenDocumentResult.SecurityError => new(file, "The file contained an unsupported security scheme.", "Security error"),
+			OpenDocumentResult.PageError => new(file, "A page was not found or a content error occurred.", "Page error"),
+			OpenDocumentResult.XFALoad => new(file, "An error occured during load of XFA.", "XFA load error"),
+			OpenDocumentResult.XFALayout => new(file, "The layout of XFA was unexpected.", "XFA layout error"),
+			_ => null
+		};
 	}
 	public static int FilePageCount(this string parameter)
 	{

@@ -19,7 +19,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection.Metadata;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -34,7 +33,9 @@ internal class MainWindowViewModel : ObservableObject
 	private readonly CancellationTokenSource[] cancellationTokenSources = [new(), new(), new()];
 	private readonly OpenFileDialog openFileDialog = new() { Filter = "PDF File (*.pdf)|*.pdf" };
 	private readonly SaveFileDialog saveFileDialog = new() { DefaultExt = ".pdf", Filter = "PDF File (*.pdf)|*.pdf|All files (*.*)|*.*", FilterIndex = 2 };
+	private readonly IPDFComponent pdfOpenComponent = PDFFactory.PDFComponent;
 	private readonly IPDFPageComponent pageComponent;
+	private readonly List<string> passwordProtectedFiles = [];
 
 	public ObservableCollection<string> HomeFolderList { get; } = [];
 	public ObservableCollection<string> HomeFileList { get; } = [];
@@ -216,6 +217,7 @@ internal class MainWindowViewModel : ObservableObject
 			SetValue(ref pagePasswordPopupOpen, value);
 			if (PopupPasswordCancelled)
 			{
+				passwordProtectedFiles.Remove(PopupPasswordFilePath);
 				if (PageCurrentPage == 0 || PageCurrentPDF?.FilePath == PopupPasswordFilePath)
 				{
 					PageCurrentPage = 1;
@@ -226,6 +228,10 @@ internal class MainWindowViewModel : ObservableObject
 					RemoveSidepanelFile(PopupPasswordFilePath);
 				}
 				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled) = (string.Empty, string.Empty, false);
+				if (passwordProtectedFiles.Count > 0)
+				{
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+				}
 			}
 		}
 	}
@@ -553,6 +559,7 @@ internal class MainWindowViewModel : ObservableObject
 	{
 		if (e.PropertyName == "CurrentPageIndex")
 		{
+			CommandManager.InvalidateRequerySuggested();
 			int currentPage = pageComponent.CurrentPageIndex;
 			ToolbarCurrentPageText = currentPage.ToString();
 			for (int index = 0; index < EditCurrentPages.Count; index++)
@@ -889,7 +896,7 @@ internal class MainWindowViewModel : ObservableObject
 		switch (PageCurrentPage)
 		{
 			case 1 when HomeCurrentPage != 0 && CanEditClearAsync():
-				await EditClearAsync();
+				await ResetHomeEditPageAsync();
 				break;
 			case 2 or 3 or 4:
 				await RefreshPageAsync();
@@ -903,48 +910,60 @@ internal class MainWindowViewModel : ObservableObject
 		InitialiseOpenFileDialog(true);
 		if (openFileDialog.ShowDialog() == true)
 		{
-			List<FileError> fileErrors = [];
-			foreach (string file in openFileDialog.FileNames)
-			{
-				FileError? fileError = file.FileError();
-				if (fileError != null)
-				{
-					fileErrors.Add(fileError);
-				}
-			}
 			CancellationToken cancellationToken = GetNewCancellationToken(1, [0, 1, 2]);
 			try
 			{
 				await Task.Run(async () =>
 				{
-					bool openFile = true;
-					foreach (string file in openFileDialog.FileNames.Where(x => x.FileError() == null))
+					List<FileError> fileErrors = [];
+					passwordProtectedFiles.Clear();
+					foreach (string file in openFileDialog.FileNames)
 					{
 						cancellationToken.ThrowIfCancellationRequested();
+						FileError? fileError = pdfOpenComponent.FileError(file);
+						if (fileError == null)
+						{
+							await Application.Current.Dispatcher.BeginInvoke(async () =>
+							{
+								if (!cancellationToken.IsCancellationRequested)
+								{
+									if (!SidepanelFileList.Contains(file))
+									{
+										SidepanelFileList.Add(file);
+									}
+								}
+							}, DispatcherPriority.Background);
+						}
+						else if (fileError.IsPasswordError)
+						{
+							passwordProtectedFiles.Add(file);
+						}
+						else
+						{
+							fileErrors.Add(fileError);
+						}
+					}
+					if (fileErrors.Count < openFileDialog.FileNames.Length && passwordProtectedFiles.Count == 0)
+					{
 						await Application.Current.Dispatcher.BeginInvoke(async () =>
 						{
 							if (!cancellationToken.IsCancellationRequested)
 							{
-								if (!SidepanelFileList.Contains(file))
-								{
-									SidepanelFileList.Add(file);
-								}
-								if (openFile)
-								{
-									openFile = false;
-									await SidepanelFileAsync(file);
-								}
+								await SidepanelFileAsync(openFileDialog.FileNames.First(x => !fileErrors.Any(y => y.FilePath == x) && !passwordProtectedFiles.Contains(x)));
 							}
 						}, DispatcherPriority.Background);
 					}
+					foreach (FileError fileError in fileErrors)
+					{
+						MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
+					}
+					if (passwordProtectedFiles.Count > 0)
+					{
+						(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+					}
 				}, cancellationToken);
-
 			}
 			catch (OperationCanceledException) { }
-			foreach (FileError fileError in fileErrors)
-			{
-				MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", "PDF Editor - File error");
-			}
 		}
 	}
 	private async Task EditBrowseAsync()
@@ -959,7 +978,7 @@ internal class MainWindowViewModel : ObservableObject
 				{
 					foreach (string file in openFileDialog.FileNames)
 					{
-						FileError? fileError = file.FileError();
+						FileError? fileError = pdfOpenComponent.FileError(file);
 						if (fileError != null)
 						{
 							fileErrors.Add(fileError);
@@ -968,7 +987,7 @@ internal class MainWindowViewModel : ObservableObject
 				}
 				else
 				{
-					FileError? fileError = openFileDialog.FileName.FileError();
+					FileError? fileError = pdfOpenComponent.FileError(openFileDialog.FileName);
 					if (fileError != null)
 					{
 						fileErrors.Add(fileError);
@@ -987,7 +1006,7 @@ internal class MainWindowViewModel : ObservableObject
 								await Task.Run(async () =>
 								{
 									int displayIndex = EditCurrentFiles.Count + 1;
-									foreach (string file in openFileDialog.FileNames.Where(x => x.FileError() == null))
+									foreach (string file in openFileDialog.FileNames.Where(x => !fileErrors.Any(y => y.FilePath == x)))
 									{
 										if (!EditCurrentFiles.Select(x => x.FilePath).Contains(file))
 										{
@@ -1052,7 +1071,7 @@ internal class MainWindowViewModel : ObservableObject
 				}
 				foreach (FileError fileError in fileErrors)
 				{
-					MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", "PDF Editor - File error");
+					MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
 				}
 			}
 		}
@@ -1302,82 +1321,68 @@ internal class MainWindowViewModel : ObservableObject
 			EditCurrentPages.Clear();
 			PDFComponent.CloseDocument();
 			PageCurrentPDF = null;
-			switch (PDFComponent.OpenDocument(parameter, PopupPassword.TextToNullableString()))
+			FileError? fileError = PDFComponent.FileError(parameter, PopupPassword.TextToNullableString(), false);
+			if (fileError == null)
 			{
-				case OpenDocumentResult.Success:
-					(PageCurrentPage, PageCurrentPDF, PagePasswordPopupOpen, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false, false);
-					ChangePageView();
-					await Task.Run(async () =>
-					{
-						cancellationToken.ThrowIfCancellationRequested();
-						byte[] file = await File.ReadAllBytesAsync(parameter);
-						cancellationToken.ThrowIfCancellationRequested();
-						int displayIndex = 1;
-						await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PopupPassword.TextToNullableString())) using (page)
-						{
-							cancellationToken.ThrowIfCancellationRequested();
-							BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
-							thumbnail.Freeze();
-							await Application.Current.Dispatcher.BeginInvoke(() =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
-								{
-									EditCurrentPages.Add(new(thumbnail, displayIndex));
-									displayIndex++;
-								}
-							}, DispatcherPriority.Background);
-						}
-					}, cancellationToken);
+				(PageCurrentPage, PageCurrentPDF, PagePasswordPopupOpen, ToolbarFitToHeightButtonVisible, ToolbarFindOpen, ToolbarContentsOpen, ToolbarThumbnailsOpen, PopupPageViewTwoPages, PopupPageViewSeparateCoverPage, NavigationFindMatchCase, NavigationFindMatchWholeWord) = (0, new(PDFComponent.DocumentInformation, pageComponent, new(parameter)), false, false, false, false, false, false, false, false, false);
+				ChangePageView();
+				if (!SidepanelFileList.Contains(parameter))
+				{
+					SidepanelFileList.Add(parameter);
+				}
+				await Task.Run(async () =>
+				{
 					cancellationToken.ThrowIfCancellationRequested();
-					(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
-					if (!SidepanelFileList.Contains(parameter))
+					byte[] file = await File.ReadAllBytesAsync(parameter);
+					cancellationToken.ThrowIfCancellationRequested();
+					int displayIndex = 1;
+					await foreach (SKBitmap page in Conversion.ToImagesAsync(file, PopupPassword.TextToNullableString())) using (page)
 					{
-						SidepanelFileList.Add(parameter);
+						cancellationToken.ThrowIfCancellationRequested();
+						BitmapSource thumbnail = BitmapSource.Create(page.Width, page.Height, 96, 96, PixelFormats.Bgra32, null, page.GetPixels(), page.RowBytes * page.Height, page.RowBytes);
+						thumbnail.Freeze();
+						await Application.Current.Dispatcher.BeginInvoke(() =>
+						{
+							if (!cancellationToken.IsCancellationRequested)
+							{
+								EditCurrentPages.Add(new(thumbnail, displayIndex));
+								displayIndex++;
+							}
+						}, DispatcherPriority.Background);
 					}
-					break;
-				case OpenDocumentResult.PasswordProtected:
-					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PopupPassword != string.Empty);
-					break;
-				case OpenDocumentResult.UnknownError:
-					MessageBox.Show($"An unknown error occured.\n({parameter})", "PDF Editor - Unknown error");
-					goto default;
-				case OpenDocumentResult.FileProblem:
-					MessageBox.Show($"The file was not found or could not be opened.\n({parameter})", "PDF Editor - File error");
-					goto default;
-				case OpenDocumentResult.FormatError:
-					MessageBox.Show($"The file is not in PDF format or is corrupted.\n({parameter})", "PDF Editor - Format error");
-					goto default;
-				case OpenDocumentResult.SecurityError:
-					MessageBox.Show($"The file contained an unsupported security scheme.\n({parameter})", "PDF Editor - Security error");
-					goto default;
-				case OpenDocumentResult.PageError:
-					MessageBox.Show($"A page was not found or a content error occurred.\n({parameter})", "PDF Editor - Page error");
-					goto default;
-				case OpenDocumentResult.XFALoad:
-					MessageBox.Show($"An error occured during load of XFA.\n({parameter})", "PDF Editor - XFA load error");
-					goto default;
-				case OpenDocumentResult.XFALayout:
-					MessageBox.Show($"The layout of XFA was unexpected.\n({parameter})", "PDF Editor - XFA load error");
-					goto default;
-				default:
-					if (PageCurrentPage == 0)
-					{
-						PageCurrentPage = 1;
-						LoadDefaultPage();
-					}
-					if (SidepanelFileList.Contains(parameter))
-					{
-						RemoveSidepanelFile(parameter);
-					}
-					if (HomeFileList.Contains(parameter))
-					{
-						await PageUnpinAsync(parameter);
-					}
-					else
-					{
-						await RefreshPageAsync();
-					}
-					break;
+				}, cancellationToken);
+				cancellationToken.ThrowIfCancellationRequested();
+				passwordProtectedFiles.Remove(PopupPasswordFilePath);
+				(PasswordBox.Password, PopupPasswordFilePath, PopupPasswordIncorrect) = (string.Empty, string.Empty, false);
+				if (passwordProtectedFiles.Count > 0)
+				{
+					(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPassword != string.Empty);
+				}
+			}
+			else if (fileError.IsPasswordError)
+			{
+				(PagePasswordPopupOpen, PasswordBox.Password, PopupPasswordFilePath, PopupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, parameter, true, PopupPassword != string.Empty);
+			}
+			else
+			{
+				MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
+				if (PageCurrentPage == 0)
+				{
+					PageCurrentPage = 1;
+					LoadDefaultPage();
+				}
+				if (SidepanelFileList.Contains(parameter))
+				{
+					RemoveSidepanelFile(parameter);
+				}
+				if (HomeFileList.Contains(parameter))
+				{
+					await PageUnpinAsync(parameter);
+				}
+				else
+				{
+					await RefreshPageAsync();
+				}
 			}
 		}
 		catch (OperationCanceledException) { }
