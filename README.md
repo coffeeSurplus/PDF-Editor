@@ -89,7 +89,7 @@ Building the application requires pdfium.dll with the matching application runti
 * FontAwesome.Sharp (6.6.0) - for Sidepanel and PDF tool icons
 * PDFiumDotNET.WPFControls (1.0.4) - for viewing PDF documents
 * PDFsharp (6.2.4) - for PDF tools
-* PDFtoImage (5.2.1) - for PDF document page thumbnails
+* PDFtoImage (5.3.0) - for PDF document page thumbnails
 
 ## Gallery
 
