@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using PDF_Editor.Source.Controls;
 using PDF_Editor.Source.Data;
 using PDF_Editor.Source.Models;
 using PDF_Editor.Source.MVVM;
@@ -437,11 +438,6 @@ internal class MainWindowViewModel : ObservableObject
 
 	public MainWindowViewModel()
 	{
-		if (Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName).Length > 1)
-		{
-			MessageBox.Show("Another instance of this application is already running.", "PDF Editor");
-			Application.Current.Shutdown();
-		}
 		_ = InitialiseDataAsync();
 		pageComponent = PDFComponent.LayoutComponent.CreatePageComponent("PageComponent", PageLayoutType.Standard);
 		pageComponent.PropertyChanged += UpdateCurrentPageText;
@@ -544,7 +540,67 @@ internal class MainWindowViewModel : ObservableObject
 				SidepanelFileList.CollectionChanged += SaveSidepanelFilesDataAsync;
 			})
 		]);
+		await OpenFilesAsync(((App)Application.Current).Args);
 		await RefreshPageAsync();
+		_ = ((App)Application.Current).StartPipeServerLoopAsync(new CancellationTokenSource().Token);
+	}
+
+	public async Task OpenFilesAsync(string[] files)
+	{
+		CancellationToken cancellationToken = GetNewCancellationToken(1, [0, 1, 2]);
+		try
+		{
+			await Task.Run(async () =>
+			{
+				List<FileError> fileErrors = [];
+				passwordProtectedFiles.Clear();
+				foreach (string file in files)
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+					FileError? fileError = pdfOpenComponent.FileError(file);
+					if (fileError == null)
+					{
+						await Application.Current.Dispatcher.BeginInvoke(async () =>
+						{
+							if (!cancellationToken.IsCancellationRequested)
+							{
+								if (!SidepanelFileList.Contains(file))
+								{
+									SidepanelFileList.Add(file);
+								}
+							}
+						}, DispatcherPriority.Background);
+					}
+					else if (fileError.IsPasswordError)
+					{
+						passwordProtectedFiles.Add(file);
+					}
+					else
+					{
+						fileErrors.Add(fileError);
+					}
+				}
+				if (fileErrors.Count < files.Length && passwordProtectedFiles.Count == 0)
+				{
+					await Application.Current.Dispatcher.BeginInvoke(async () =>
+					{
+						if (!cancellationToken.IsCancellationRequested)
+						{
+							await SidepanelFileAsync(files.First(x => !fileErrors.Any(y => y.FilePath == x) && !passwordProtectedFiles.Contains(x)));
+						}
+					}, DispatcherPriority.Background);
+				}
+				foreach (FileError fileError in fileErrors)
+				{
+					MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
+				}
+				if (passwordProtectedFiles.Count > 0)
+				{
+					(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
+				}
+			}, cancellationToken);
+		}
+		catch (OperationCanceledException) { }
 	}
 
 	private async void SaveHomeFoldersDataAsync(object? sender, NotifyCollectionChangedEventArgs e) => await DataManager.WriteFileAsync(HomeFolderList, DataManager.HomeFoldersPath);
@@ -895,60 +951,7 @@ internal class MainWindowViewModel : ObservableObject
 		InitialiseOpenFileDialog(true);
 		if (openFileDialog.ShowDialog() == true)
 		{
-			CancellationToken cancellationToken = GetNewCancellationToken(1, [0, 1, 2]);
-			try
-			{
-				await Task.Run(async () =>
-				{
-					List<FileError> fileErrors = [];
-					passwordProtectedFiles.Clear();
-					foreach (string file in openFileDialog.FileNames)
-					{
-						cancellationToken.ThrowIfCancellationRequested();
-						FileError? fileError = pdfOpenComponent.FileError(file);
-						if (fileError == null)
-						{
-							await Application.Current.Dispatcher.BeginInvoke(async () =>
-							{
-								if (!cancellationToken.IsCancellationRequested)
-								{
-									if (!SidepanelFileList.Contains(file))
-									{
-										SidepanelFileList.Add(file);
-									}
-								}
-							}, DispatcherPriority.Background);
-						}
-						else if (fileError.IsPasswordError)
-						{
-							passwordProtectedFiles.Add(file);
-						}
-						else
-						{
-							fileErrors.Add(fileError);
-						}
-					}
-					if (fileErrors.Count < openFileDialog.FileNames.Length && passwordProtectedFiles.Count == 0)
-					{
-						await Application.Current.Dispatcher.BeginInvoke(async () =>
-						{
-							if (!cancellationToken.IsCancellationRequested)
-							{
-								await SidepanelFileAsync(openFileDialog.FileNames.First(x => !fileErrors.Any(y => y.FilePath == x) && !passwordProtectedFiles.Contains(x)));
-							}
-						}, DispatcherPriority.Background);
-					}
-					foreach (FileError fileError in fileErrors)
-					{
-						MessageBox.Show($"{fileError.Message}\n({fileError.FilePath})", $"PDF Editor - {fileError.ErrorType}");
-					}
-					if (passwordProtectedFiles.Count > 0)
-					{
-						(PagePasswordPopupOpen, PopupPasswordBox.Password, PopupPasswordFilePath, popupPasswordCancelled, PopupPasswordIncorrect) = (true, string.Empty, passwordProtectedFiles[0], true, PopupPasswordBox.Password != string.Empty);
-					}
-				}, cancellationToken);
-			}
-			catch (OperationCanceledException) { }
+			await OpenFilesAsync(openFileDialog.FileNames);
 		}
 	}
 	private async Task EditBrowseAsync()
@@ -1282,6 +1285,7 @@ internal class MainWindowViewModel : ObservableObject
 								outputDocument.SetProperties(EditTitleText, EditAuthorText, EditCreatorText, EditKeywordsText, EditSubjectText, EditPasswordBox.Password);
 								outputDocument.Save(saveFilePath);
 								outputDocument.Close();
+								HomeCurrentPage = 0;
 								await Application.Current.Dispatcher.BeginInvoke(async () =>
 								{
 									if (!cancellationToken.IsCancellationRequested)
@@ -1380,7 +1384,7 @@ internal class MainWindowViewModel : ObservableObject
 						}
 						cancellationToken.ThrowIfCancellationRequested();
 						passwordProtectedFiles.Remove(PopupPasswordFilePath);
-						Application.Current.Dispatcher.Invoke(() =>
+						await Application.Current.Dispatcher.BeginInvoke(() =>
 						{
 							if (!cancellationToken.IsCancellationRequested)
 							{
