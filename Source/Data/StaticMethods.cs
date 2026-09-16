@@ -92,4 +92,5 @@ internal static class StaticMethods
 			document.SecuritySettings.UserPassword = password;
 		}
 	}
+	public static void ShowMessage(this string message, string path, string? caption = null) => MessageBox.Show(Application.Current.MainWindow, $"{message}\n({path})", caption != null ? $"PDF Editor - {caption}" : "PDF Editor");
 }
